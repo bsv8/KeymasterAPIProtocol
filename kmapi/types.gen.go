@@ -253,15 +253,15 @@ type ServerDefaults struct {
 }
 
 type ServerUpdate struct {
-	ArbiterPublicKeys             []string        `json:"arbiterPublicKeys,omitempty"`
-	Collector                     CollectorUpdate `json:"collector,omitempty"`
-	DefaultFullBlockPriceSatoshis *string         `json:"defaultFullBlockPriceSatoshis,omitempty"`
-	DefaultSeedPriceSatoshis      *string         `json:"defaultSeedPriceSatoshis,omitempty"`
+	ArbiterPublicKeys             []string         `json:"arbiterPublicKeys,omitempty"`
+	Collector                     *CollectorUpdate `json:"collector,omitempty"`
+	DefaultFullBlockPriceSatoshis *string          `json:"defaultFullBlockPriceSatoshis,omitempty"`
+	DefaultSeedPriceSatoshis      *string          `json:"defaultSeedPriceSatoshis,omitempty"`
 }
 
 type Services struct {
 	ArbitrationServices []ArbitrationService `json:"arbitrationServices,omitempty"`
-	SatSuppliers        []Supplier           `json:"satSuppliers,omitempty"`
+	SatSuppliers        []Supplier           `json:"satSuppliers"`
 }
 
 type SetDefaultRootRequest struct {
@@ -283,14 +283,14 @@ type Settings struct {
 }
 
 type SettingsUpdate struct {
-	FeeRateSatoshisPerKb *int64          `json:"feeRateSatoshisPerKb,omitempty"`
-	Language             *string         `json:"language,omitempty"`
-	Port                 *int            `json:"port,omitempty"`
-	Revision             int64           `json:"revision"`
-	Scheduler            SchedulerUpdate `json:"scheduler,omitempty"`
-	Server               ServerUpdate    `json:"server,omitempty"`
-	Theme                *string         `json:"theme,omitempty"`
-	WocAPIKey            *string         `json:"wocApiKey,omitempty"`
+	FeeRateSatoshisPerKb *int64           `json:"feeRateSatoshisPerKb,omitempty"`
+	Language             *string          `json:"language,omitempty"`
+	Port                 *int             `json:"port,omitempty"`
+	Revision             int64            `json:"revision"`
+	Scheduler            *SchedulerUpdate `json:"scheduler,omitempty"`
+	Server               *ServerUpdate    `json:"server,omitempty"`
+	Theme                *string          `json:"theme,omitempty"`
+	WocAPIKey            *string          `json:"wocApiKey,omitempty"`
 }
 
 type SnapshotEvent struct {

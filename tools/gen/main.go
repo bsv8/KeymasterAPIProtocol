@@ -187,7 +187,10 @@ func main() {
 			if optional {
 				jt += ",omitempty"
 			}
-			goOut.WriteString(fmt.Sprintf("\t%s %s `json:\"%s\"`\n", goField(p), goType(ps, optional && ps.Ref == "" && ps.Type != "array" && ps.Type != "object"), jt))
+			// 可选引用保持指针以区分“未提供”；可选数组/字典本身
+			// 已可空（nil），无需指针。
+			ptr := optional && (ps.Ref != "" || (ps.Type != "array" && ps.Type != "object"))
+			goOut.WriteString(fmt.Sprintf("\t%s %s `json:\"%s\"`\n", goField(p), goType(ps, ptr), jt))
 		}
 		goOut.WriteString("}\n\n")
 	}

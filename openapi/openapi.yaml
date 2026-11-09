@@ -873,6 +873,7 @@ components:
           type: string
     Services:
       type: object
+      required: [satSuppliers]
       properties:
         satSuppliers:
           type: array

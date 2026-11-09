@@ -260,7 +260,7 @@ export interface ServerUpdate {
 
 export interface Services {
   arbitrationServices?: ArbitrationService[];
-  satSuppliers?: Supplier[];
+  satSuppliers: Supplier[];
 }
 
 export interface SetDefaultRootRequest {

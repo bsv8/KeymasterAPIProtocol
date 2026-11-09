@@ -1,0 +1,30 @@
+{
+  "name": "keymaster-api-protocol",
+  "version": "0.1.0",
+  "description": "Keymaster 后台业务 API v1 契约 SDK（DTO 与 HTTP/SSE 客户端，Go/TS 同契约）",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "rm -rf dist && tsc",
+    "test": "vitest run",
+    "prepublishOnly": "npm run typecheck && npm run build && npm test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "typescript": "5.9.3",
+    "vitest": "3.2.4"
+  }
+}

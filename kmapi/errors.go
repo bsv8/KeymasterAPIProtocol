@@ -6,8 +6,8 @@ import (
 	"strings"
 )
 
-// TransportError 表示未收到 HTTP 响应：连接拒绝、DNS、超时或调用者取消。
-// 它永不携带业务响应，调用者不得把它误认为业务错误。
+// TransportError 表示未收到业务响应：连接拒绝、DNS、超时、调用者取消或
+// 连接关闭。它永不携带业务响应，调用者不得把它误认为业务错误。
 type TransportError struct {
 	Op  string
 	Err error
@@ -19,9 +19,22 @@ func (e *TransportError) Error() string {
 
 func (e *TransportError) Unwrap() error { return e.Err }
 
-// HTTPError 表示已收到业务响应但状态码非 2xx。服务器已到达，
-// 不得据此重试另一后台；可重试性由调用方按状态码自行判断，
-// SDK 不自动重试，更不执行换后台。
+// ProtocolError 表示已收到业务响应但为结构化错误（v1 消息 response.error）。
+// 服务器已到达，不得据此重试另一后台；SDK 不自动重试，更不执行换后台。
+type ProtocolError struct {
+	Op        string
+	ID        string
+	Code      string
+	Message   string
+	Retryable bool
+}
+
+func (e *ProtocolError) Error() string {
+	return fmt.Sprintf("后台业务错误 %s (%s): %s", e.Code, e.Op, e.Message)
+}
+
+// HTTPError 已退役：旧 HTTP/SSE 客户端兼容保留，最终删除。
+// 新代码使用 ProtocolError；不得新增 HTTPError 依赖。
 type HTTPError struct {
 	Op     string
 	Status int
@@ -73,7 +86,7 @@ type errCanceled struct{}
 
 func (errCanceled) Error() string { return "调用者取消" }
 
-// HTTPStatus 返回 HTTP 业务状态码（若为 HTTPError）。
+// HTTPStatus 返回 HTTP 业务状态码（若为 HTTPError，仅旧客户端兼容）。
 func HTTPStatus(err error) (int, bool) {
 	var h *HTTPError
 	if errors.As(err, &h) {
@@ -82,32 +95,56 @@ func HTTPStatus(err error) (int, bool) {
 	return 0, false
 }
 
-// IsLocked 报告 423（需解锁，不是自动重试）。
+// ErrorCode 返回业务错误码（若为 ProtocolError）。
+func ErrorCode(err error) (string, bool) {
+	var p *ProtocolError
+	if errors.As(err, &p) {
+		return p.Code, true
+	}
+	return "", false
+}
+
+// IsLocked 报告 LOCKED（需解锁，不是自动重试）。兼容旧 423。
 func IsLocked(err error) bool {
+	if c, ok := ErrorCode(err); ok {
+		return c == ErrLocked
+	}
 	s, ok := HTTPStatus(err)
 	return ok && s == 423
 }
 
-// IsNotInitialized 报告 412（需 init）。
+// IsNotInitialized 报告 NOT_INITIALIZED（需 init）。兼容旧 412。
 func IsNotInitialized(err error) bool {
+	if c, ok := ErrorCode(err); ok {
+		return c == ErrNotInitialized
+	}
 	s, ok := HTTPStatus(err)
 	return ok && s == 412
 }
 
-// IsStopping 报告 503（后台停止中）。
+// IsStopping 报告 STOPPING（后台停止中）。兼容旧 503。
 func IsStopping(err error) bool {
+	if c, ok := ErrorCode(err); ok {
+		return c == ErrStopping
+	}
 	s, ok := HTTPStatus(err)
 	return ok && s == 503
 }
 
-// IsNotFound 报告 404。
+// IsNotFound 报告 NOT_FOUND。兼容旧 404。
 func IsNotFound(err error) bool {
+	if c, ok := ErrorCode(err); ok {
+		return c == ErrNotFound
+	}
 	s, ok := HTTPStatus(err)
 	return ok && s == 404
 }
 
-// IsConflict 报告 409（revision 过期或业务冲突）。
+// IsConflict 报告 CONFLICT 或 STATE_CONFLICT（revision 过期、条件写冲突或审批竞争）。兼容旧 409。
 func IsConflict(err error) bool {
+	if c, ok := ErrorCode(err); ok {
+		return c == ErrConflict || c == ErrStateConflict
+	}
 	s, ok := HTTPStatus(err)
 	return ok && s == 409
 }

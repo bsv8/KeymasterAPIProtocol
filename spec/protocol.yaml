@@ -1,0 +1,1226 @@
+protocol: kmapi-v1
+info:
+  product: km
+  apiVersion: v1
+  wsPath: /api/ws
+  description: Keymaster 后台业务 API v1 消息规范（原地替换 HTTP/SSE）。WebSocket 与进程内传输共用同一分派器与语义。
+transport:
+  listen: "127.0.0.1:8790"
+  wsPath: /api/ws
+  baseConversion: "http(s)://host -> ws(s)://host/api/ws；同时支持显式 ws(s) 地址"
+  staticHttp: 仅静态 Web 与 WebSocket 升级；旧业务 HTTP API 与 SSE 已退役
+handshake:
+  hello: {product, apiVersion, client: {name, version}}
+  welcome: {product, apiVersion, instanceId, connectionId, limits}
+  check: 精确匹配 product=km 且 apiVersion=v1；不协商、不回退；失败直接返回版本错误
+limits:
+  jsonControlMaxBytes: 1048576
+  binarySingleMaxBytes: 16777216
+  connUnackedMaxBytes: 33554432
+  connPendingSendMaxBytes: 33554432
+  connInflightRequests: 16
+  attachmentDeadlineSecs: 30
+  hard:
+    storagePlainMaxBytes: 16777216
+    msfileSeedMaxBytes: 16777216
+    msfileBlockMaxBytes: 262144
+  note: 后台可公布更低限制；加密信封按 cc 现有格式计算合法上限，不误用明文上限拒绝加密对象
+messages:
+  hello: 建立连接、校验身份、声明客户端信息
+  welcome: 返回产品、版本、后台实例标识、连接标识与资源限制
+  request: "{id, method, params, attachments?}；attachments 为 [{id, bytes}] 附件声明"
+  response: "{id, result} 或 {id, error:{code, message, retryable}}"
+  binary: "{requestId, attachmentId, declaredBytes, data}；一附件对应一完整应用消息；首版无分片续传；发送顺序为“请求声明在先、AttachBegin+二进制帧在后”，服务端同步预注册后等待收齐"
+  cancel: "{id} 尝试取消指定在途调用"
+  subscribe: "{topics} 建立订阅"
+  unsubscribe: "{subscriptionId|topics} 撤销订阅；优先按 subscriptionId 删除单条，仅 topics 时按主题集合匹配"
+  snapshot: 订阅建立后的当前快照及版本信息
+  event: 后续变化；每个主题的序号连续
+  resync: 要求重取快照；客户端重建订阅并重取，不自动重发副作用调用
+rules:
+  requestId: 同一连接生命周期内不复用；重复 ID 不得重复执行；ID 只关联调用，不自动成为资金或文件操作的持久幂等键
+  cancelSemantics: 取消成功接收不等于副作用已回退；业务阶段不可取消时明确返回
+  noAutoResend: 断线后不自动重发写入、签名、付款或任务提交；恢复后查询业务状态或重取快照
+  subscriptionRules:
+    - snapshot 只投递给签发它的订阅（按订阅 ID）
+    - event 只投递给主题集合包含该事件主题的订阅
+    - unsubscribe 不得清除同连接其他订阅
+  binaryRules:
+    - 附件重复、缺失、超时、长度不符均拒绝
+    - 未收齐和未校验完整前不得执行业务
+    - 未绑定附件不得无限暂存；每次结束、取消、断线释放附件资源
+  backpressure:
+    - 普通状态可合并；响应和最终结果不得静默丢弃
+    - 无法可靠交付时关闭连接，恢复后查询或重取快照
+    - 附件未收齐前不执行业务，超时释放内存
+heartbeat:
+  serverPingSecs: 15
+  deadAfterSecs: 45
+reconnect:
+  policy: 只重连原地址；间隔 1、2、4、8、15 秒，之后停止自动尝试并提供显式重试
+  onReconnect: 重取快照；丢弃旧实例迟到事件与旧“已解锁”状态；不自动重发副作用调用
+closeCodes:
+  1000: 正常关闭
+  1002: 协议违规
+  1008: 策略拒绝
+  1009: 过大
+  1011: 内部错误
+  note: 普通业务拒绝通过响应表达，不用关闭码
+topics:
+  - connection
+  - wallet
+  - balance
+  - task
+  - roots
+  - settings
+  - collector
+methods:
+  - name: status.get
+    params: null
+    result: Status
+    timeout: probe
+    description: 后台状态与协议标识（握手后业务查询）
+  - name: info.get
+    params: null
+    result: Info
+    timeout: short
+    description: 钱包信息与余额
+  - name: wallet.unlock
+    params: UnlockRequest
+    result: Ok
+    timeout: long
+    description: 解锁后台；密码只在请求体，不进响应/事件/日志
+  - name: wallet.create
+    params: WalletCreateRequest
+    result: WalletCreateResponse
+    timeout: long
+    description: 新建完整钱包（新增能力，后台执行，KeyHold SDK；失败不留半套状态）
+  - name: wallet.import
+    params: WalletImportRequest
+    result: WalletImportResponse
+    timeout: long
+    description: 导入完整钱包（新增能力，后台执行，KeyHold SDK；不覆盖已有钱包）
+  - name: roots.list
+    params: null
+    result: RootsView
+    timeout: short
+    description: 售卖根列表
+  - name: roots.add
+    params: AddRootRequest
+    result: AddRootResponse
+    timeout: short
+    description: 新增售卖根
+  - name: roots.remove
+    params: RootRemoveRequest
+    result: RevisionedOk
+    timeout: short
+    description: 删除售卖根（合并旧 DELETE /api/roots 与 /api/roots/ 别名）
+  - name: roots.setDefault
+    params: SetDefaultRootRequest
+    result: RevisionedOk
+    timeout: short
+    description: 设置默认根（合并旧 PUT 与 POST /api/roots/default 别名）
+  - name: files.list
+    params: null
+    result: FilesView
+    timeout: short
+    description: 文件列表
+  - name: files.browse
+    params: BrowseRequest
+    result: BrowseView
+    timeout: short
+    description: 目录浏览；path 缺省为 /
+  - name: catalog.refresh
+    params: CatalogRefreshRequest
+    result: JsonValue
+    timeout: short
+    description: 刷新 catalog；单根返回原生报告直通，多根返回 refreshed 数组
+  - name: settings.get
+    params: null
+    result: Settings
+    timeout: short
+    description: 设置全文
+  - name: settings.update
+    params: SettingsUpdate
+    result: Settings
+    timeout: short
+    description: 更新设置（需 revision）
+  - name: settings.reset
+    params: RevisionRequest
+    result: Settings
+    timeout: short
+    description: 恢复普通参数；不删 App 数据
+  - name: collector.status
+    params: null
+    result: CollectorStatus
+    timeout: short
+    description: 采集状态
+  - name: collector.history
+    params: null
+    result: CollectorHistory
+    timeout: short
+    description: 采集历史
+  - name: collector.describe
+    params: CollectorDescriptionRequest
+    result: Ok
+    timeout: short
+    description: 设置采集描述
+  - name: collector.config
+    params: CollectorConfigRequest
+    result: Ok
+    timeout: short
+    description: 采集配置
+  - name: collector.flush
+    params: null
+    result: CollectorFlushResponse
+    timeout: short
+    description: 采集刷新
+  - name: collector.retry
+    params: null
+    result: CollectorRetryResponse
+    timeout: short
+    description: 采集重试
+  - name: pricing.setDefaults
+    params: PricingDefaultsRequest
+    result: PricingDefaultsResponse
+    timeout: short
+    description: 默认价格
+  - name: pricing.batch
+    params: PricingBatchRequest
+    result: PricingBatchResponse
+    timeout: short
+    description: 批量定价
+  - name: pricing.setFile
+    params: PricingFileRequest
+    result: PricingFileResponse
+    timeout: short
+    description: 单文件定价
+  - name: pricing.clearFile
+    params: PricingClearRequest
+    result: PricingClearResponse
+    timeout: short
+    description: 清除单文件定价
+  - name: tasks.list
+    params: null
+    result: TaskList
+    timeout: short
+    description: 任务列表
+  - name: tasks.create
+    params: CreateTaskRequest
+    result: Task
+    timeout: long
+    description: 创建下载任务，返回持久任务 ID；后续订阅任务主题；响应丢失查询原任务，不自动重发
+  - name: tasks.get
+    params: TaskGetRequest
+    result: Task
+    timeout: short
+    description: 单任务查询
+  - name: tasks.cancel
+    params: TaskCancelRequest
+    result: Ok
+    timeout: short
+    description: 取消任务；取消成功不等于资金回滚
+  - name: tasks.subscribe
+    params: TaskSubscribeRequest
+    result: Task
+    timeout: stream
+    description: 任务级订阅（替代旧 /api/tasks/{seed}/events）；终态结束流
+  - name: events.subscribe
+    params: EventsSubscribeRequest
+    result: SnapshotEvent
+    timeout: stream
+    description: 通用事件订阅；先快照后变化；未知主题拒绝
+  - name: connect.approvals.list
+    params: null
+    result: ConnectApprovalsView
+    timeout: short
+    description: 审批队列（新增 Connect 能力）
+  - name: connect.approvals.decide
+    params: ConnectApprovalDecideRequest
+    result: ConnectApprovalDecideResponse
+    timeout: short
+    description: 批准/拒绝/取消待办；只引用已保存原请求 ID；重复决定不重复执行
+  - name: connect.bindings.list
+    params: null
+    result: ConnectBindingsView
+    timeout: short
+    description: 页面连接与 App 绑定（新增）
+  - name: connect.auth.list
+    params: null
+    result: ConnectAuthView
+    timeout: short
+    description: App 授权查询（新增）
+  - name: connect.auth.revoke
+    params: ConnectAuthRevokeRequest
+    result: Ok
+    timeout: short
+    description: 撤销 App 授权（新增）
+  - name: connect.request.exec
+    params: ConnectExecRequest
+    result: JsonValue
+    timeout: connect
+    description: 执行已审批原请求；App 上下文禁止进入钱包管理方法
+  - name: storage.put
+    params: StoragePutRequest
+    result: StoragePutResponse
+    timeout: short
+    description: App 对象写入，二进制附件；条件创建走唯一约束
+  - name: storage.get
+    params: StorageGetRequest
+    result: StorageGetResponse
+    timeout: short
+    description: App 对象读取，支持范围
+  - name: storage.list
+    params: StorageListRequest
+    result: StorageListResponse
+    timeout: short
+    description: 目录/分页列举
+  - name: storage.delete
+    params: StorageDeleteRequest
+    result: Ok
+    timeout: short
+    description: App 对象删除
+errors:
+  - code: BAD_REQUEST
+    description: 请求非法（参数缺失/类型错误/未知主题/附件违规）
+  - code: NOT_FOUND
+    description: 不存在
+  - code: CONFLICT
+    description: 版本冲突或业务冲突（revision 过期、在途会话未收尾、条件写冲突）
+  - code: LOCKED
+    description: 后台已锁定；需解锁而非重试/换后台
+  - code: STOPPING
+    description: 后台停止中
+  - code: NOT_INITIALIZED
+    description: 尚未初始化
+  - code: VERSION_MISMATCH
+    description: 协议不兼容（product/apiVersion 精确校验失败）
+  - code: ORIGIN_REJECTED
+    description: Host/Origin 拒绝
+  - code: TOO_LARGE
+    description: 超过公布的资源限制
+  - code: STATE_CONFLICT
+    description: 审批/决定竞争失败（已有终态转换）
+  - code: FORBIDDEN
+    description: 无操作许可（App 授权缺少该方法所需的许可范围）
+  - code: CANCELLED
+    description: 调用被取消；不代表副作用已回滚
+  - code: IDENTITY_REQUIRED
+    description: 缺少 App 身份（Connect 执行门禁）
+  - code: INTERNAL
+    description: 内部错误
+errorsNote: 对外 Connect 错误只使用 KeymasterConnect 正式错误表；后台 Connect 错误码不在此另造
+schemas:
+  Status:
+    type: object
+    required: [initialized, state, product, apiVersion]
+    properties:
+      initialized:
+        type: boolean
+      state:
+        type: string
+        enum: [uninitialized, locked, unlocked, stopping]
+      network:
+        type: string
+      locked:
+        type: boolean
+      address:
+        type: string
+      publicKey:
+        type: string
+      product:
+        type: string
+        enum: ['km']
+      apiVersion:
+        type: string
+        enum: [v1]
+  Info:
+    type: object
+    required: [connected, network, locked, address]
+    properties:
+      connected:
+        type: boolean
+      network:
+        type: string
+      locked:
+        type: boolean
+      address:
+        type: string
+      totalSats:
+        type: integer
+        format: uint64
+      availableSats:
+        type: integer
+        format: uint64
+      allocatedSats:
+        type: integer
+        format: uint64
+      queryTime:
+        type: string
+      cached:
+        type: boolean
+      error:
+        type: string
+  UnlockRequest:
+    type: object
+    required: [password]
+    properties:
+      password:
+        type: string
+        description: 敏感请求字段，永不出现在响应/事件/日志中
+  Ok:
+    type: object
+    required: [ok]
+    properties:
+      ok:
+        type: boolean
+  RevisionRequest:
+    type: object
+    required: [revision]
+    properties:
+      revision:
+        type: integer
+        format: int64
+  RevisionedOk:
+    type: object
+    required: [ok, revision]
+    properties:
+      ok:
+        type: boolean
+      revision:
+        type: integer
+        format: int64
+  Root:
+    type: object
+    required: [id, path]
+    properties:
+      id:
+        type: string
+      path:
+        type: string
+  RootView:
+    type: object
+    required: [id, path, accessible]
+    properties:
+      id:
+        type: string
+      path:
+        type: string
+      accessible:
+        type: boolean
+      error:
+        type: string
+  RootsView:
+    type: object
+    required: [roots, revision]
+    properties:
+      roots:
+        type: array
+        items:
+          $ref: '#/components/schemas/RootView'
+      defaultDownloadRootID:
+        type: string
+      revision:
+        type: integer
+        format: int64
+  AddRootRequest:
+    type: object
+    required: [path, revision]
+    properties:
+      path:
+        type: string
+      revision:
+        type: integer
+        format: int64
+  AddRootResponse:
+    type: object
+    required: [id, path, revision]
+    properties:
+      id:
+        type: string
+      path:
+        type: string
+      revision:
+        type: integer
+        format: int64
+  SetDefaultRootRequest:
+    type: object
+    required: [id, revision]
+    properties:
+      id:
+        type: string
+      revision:
+        type: integer
+        format: int64
+  FileView:
+    type: object
+    required: [rootId, path, name, seedHash, seedPrice, blockPrice, override, state]
+    properties:
+      rootId:
+        type: string
+      path:
+        type: string
+      name:
+        type: string
+      size:
+        type: integer
+        format: uint64
+      seedHash:
+        type: string
+      blocks:
+        type: integer
+        format: uint64
+      seedPrice:
+        type: string
+      blockPrice:
+        type: string
+      override:
+        type: boolean
+      state:
+        type: string
+      error:
+        type: string
+  FilesView:
+    type: object
+    required: [files]
+    properties:
+      files:
+        type: array
+        items:
+          $ref: '#/components/schemas/FileView'
+  BrowseEntry:
+    type: object
+    required: [name, path]
+    properties:
+      name:
+        type: string
+      path:
+        type: string
+  BrowseView:
+    type: object
+    required: [path, dirs]
+    properties:
+      path:
+        type: string
+      parent:
+        type: string
+      dirs:
+        type: array
+        items:
+          $ref: '#/components/schemas/BrowseEntry'
+  SchedulerSettings:
+    type: object
+    required: [maxBlockPriceSatoshis, poolBlocks, totalSeats, floatingSeats, requestTimeoutMs]
+    properties:
+      maxBlockPriceSatoshis:
+        type: string
+      poolBlocks:
+        type: integer
+      totalSeats:
+        type: integer
+      floatingSeats:
+        type: integer
+      requestTimeoutMs:
+        type: integer
+  Supplier:
+    type: object
+    required: [id, name, publicKeyHex, multiaddrs, enabled]
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      publicKeyHex:
+        type: string
+      multiaddrs:
+        type: array
+        items:
+          type: string
+      enabled:
+        type: boolean
+  ArbitrationService:
+    type: object
+    properties:
+      name:
+        type: string
+      publicKeyHex:
+        type: string
+      address:
+        type: string
+  Services:
+    type: object
+    required: [satSuppliers]
+    properties:
+      satSuppliers:
+        type: array
+        items:
+          $ref: '#/components/schemas/Supplier'
+      arbitrationServices:
+        type: array
+        items:
+          $ref: '#/components/schemas/ArbitrationService'
+  CollectorEntry:
+    type: object
+    required: [id, enabled]
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      endpoint:
+        type: string
+      enabled:
+        type: boolean
+  CollectorSettings:
+    type: object
+    required: [collectors, earlyTriggerCount, submitIntervalMs, retryBaseMs, retryCapMs]
+    properties:
+      collectors:
+        type: array
+        items:
+          $ref: '#/components/schemas/CollectorEntry'
+      earlyTriggerCount:
+        type: integer
+      submitIntervalMs:
+        type: integer
+        format: int64
+      retryBaseMs:
+        type: integer
+        format: int64
+      retryCapMs:
+        type: integer
+        format: int64
+  ServerDefaults:
+    type: object
+    required: [defaultSeedPriceSatoshis, defaultFullBlockPriceSatoshis, collector]
+    properties:
+      defaultSeedPriceSatoshis:
+        type: string
+      defaultFullBlockPriceSatoshis:
+        type: string
+      arbiterPublicKeys:
+        type: array
+        items:
+          type: string
+      collector:
+        $ref: '#/components/schemas/CollectorSettings'
+  Settings:
+    type: object
+    required: [version, revision, port, theme, language, wocApiKey, feeRateSatoshisPerKb, scheduler, services, server]
+    properties:
+      version:
+        type: integer
+      revision:
+        type: integer
+        format: int64
+      port:
+        type: integer
+      theme:
+        type: string
+      language:
+        type: string
+      wocApiKey:
+        type: string
+      feeRateSatoshisPerKb:
+        type: integer
+        format: int64
+      scheduler:
+        $ref: '#/components/schemas/SchedulerSettings'
+      services:
+        $ref: '#/components/schemas/Services'
+      server:
+        $ref: '#/components/schemas/ServerDefaults'
+  SchedulerUpdate:
+    type: object
+    properties:
+      maxBlockPriceSatoshis:
+        type: string
+      poolBlocks:
+        type: integer
+      totalSeats:
+        type: integer
+      floatingSeats:
+        type: integer
+      requestTimeoutMs:
+        type: integer
+  CollectorUpdate:
+    type: object
+    properties:
+      collectors:
+        type: array
+        items:
+          $ref: '#/components/schemas/CollectorEntry'
+      earlyTriggerCount:
+        type: integer
+      submitIntervalMs:
+        type: integer
+        format: int64
+      retryBaseMs:
+        type: integer
+        format: int64
+      retryCapMs:
+        type: integer
+        format: int64
+  ServerUpdate:
+    type: object
+    properties:
+      defaultSeedPriceSatoshis:
+        type: string
+      defaultFullBlockPriceSatoshis:
+        type: string
+      arbiterPublicKeys:
+        type: array
+        items:
+          type: string
+      collector:
+        $ref: '#/components/schemas/CollectorUpdate'
+  SettingsUpdate:
+    type: object
+    required: [revision]
+    properties:
+      revision:
+        type: integer
+        format: int64
+      port:
+        type: integer
+      theme:
+        type: string
+      language:
+        type: string
+      wocApiKey:
+        type: string
+      feeRateSatoshisPerKb:
+        type: integer
+        format: int64
+      scheduler:
+        $ref: '#/components/schemas/SchedulerUpdate'
+      server:
+        $ref: '#/components/schemas/ServerUpdate'
+  CatalogRefreshRequest:
+    type: object
+    properties:
+      rootId:
+        type: string
+      force:
+        type: boolean
+  CatalogRefreshResponse:
+    type: object
+    description: 多根返回 refreshed 数组；单根返回原生报告对象（直通，不在此冻结内部字段）
+    properties:
+      refreshed:
+        type: array
+        items:
+          type: object
+  CollectorStatusEntry:
+    type: object
+    required: [id, enabled, pendingCount, confirmedCount, inflight]
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      endpoint:
+        type: string
+      enabled:
+        type: boolean
+      pendingCount:
+        type: integer
+      confirmedCount:
+        type: integer
+      inflight:
+        type: boolean
+      lastError:
+        type: string
+      lastSuccessAt:
+        type: integer
+        format: int64
+  CollectorStatus:
+    type: object
+    required: [collectors, intervals]
+    properties:
+      collectors:
+        type: array
+        items:
+          $ref: '#/components/schemas/CollectorStatusEntry'
+      intervals:
+        type: object
+        required: [earlyTriggerCount, submitIntervalMs, retryBaseMs, retryCapMs]
+        properties:
+          earlyTriggerCount:
+            type: integer
+          submitIntervalMs:
+            type: integer
+            format: int64
+          retryBaseMs:
+            type: integer
+            format: int64
+          retryCapMs:
+            type: integer
+            format: int64
+      officialEndpoint:
+        type: string
+  CollectorSubmission:
+    type: object
+    required: [collectorId, archiveId, at, trigger, count]
+    properties:
+      collectorId:
+        type: string
+      archiveId:
+        type: string
+      at:
+        type: integer
+        format: int64
+      trigger:
+        type: string
+      count:
+        type: integer
+  CollectorHistory:
+    type: object
+    required: [submissions]
+    properties:
+      submissions:
+        type: array
+        items:
+          $ref: '#/components/schemas/CollectorSubmission'
+  CollectorDescriptionRequest:
+    type: object
+    required: [seedHash, description]
+    properties:
+      seedHash:
+        type: string
+      description:
+        type: string
+  CollectorConfigRequest:
+    type: object
+    required: [revision]
+    properties:
+      revision:
+        type: integer
+        format: int64
+      collectors:
+        type: array
+        items:
+          $ref: '#/components/schemas/CollectorEntry'
+      earlyTriggerCount:
+        type: integer
+      submitIntervalMs:
+        type: integer
+        format: int64
+      retryBaseMs:
+        type: integer
+        format: int64
+      retryCapMs:
+        type: integer
+        format: int64
+  CollectorFlushResponse:
+    type: object
+    required: [triggered]
+    properties:
+      triggered:
+        type: array
+        items:
+          type: string
+  CollectorRetryResponse:
+    type: object
+    required: [retried]
+    properties:
+      retried:
+        type: array
+        items:
+          type: string
+  PricingDefaultsRequest:
+    type: object
+    required: [seedPrice, blockPrice, revision]
+    properties:
+      seedPrice:
+        type: string
+      blockPrice:
+        type: string
+      revision:
+        type: integer
+        format: int64
+  PricingDefaultsResponse:
+    type: object
+    required: [seedPrice, blockPrice, revision]
+    properties:
+      seedPrice:
+        type: string
+      blockPrice:
+        type: string
+      revision:
+        type: integer
+        format: int64
+  PricingBatchRequest:
+    type: object
+    required: [rootId, mode, seedPrice, blockPrice]
+    properties:
+      rootId:
+        type: string
+      mode:
+        type: string
+        enum: [all, unpriced]
+      path:
+        type: string
+      seedPrice:
+        type: string
+      blockPrice:
+        type: string
+  PricingBatchResponse:
+    type: object
+    required: [updated]
+    properties:
+      updated:
+        type: integer
+  PricingFileRequest:
+    type: object
+    required: [rootId, path, seedPrice, blockPrice]
+    properties:
+      rootId:
+        type: string
+      path:
+        type: string
+      seedPrice:
+        type: string
+      blockPrice:
+        type: string
+  PricingFileResponse:
+    type: object
+    required: [updated]
+    properties:
+      updated:
+        type: string
+  PricingClearResponse:
+    type: object
+    required: [cleared]
+    properties:
+      cleared:
+        type: string
+  Task:
+    type: object
+    required: [seedHashHex, rootID, state, blocksDone, blocksTotal, createdAt, updatedAt]
+    properties:
+      seedHashHex:
+        type: string
+      rootID:
+        type: string
+      state:
+        type: string
+        enum: [pending, running, done, failed, cancelled]
+      detail:
+        type: string
+      blocksDone:
+        type: integer
+        format: uint64
+      blocksTotal:
+        type: integer
+        format: uint64
+      recommended:
+        type: array
+        items:
+          type: string
+      finalPath:
+        type: string
+      bytes:
+        type: integer
+        format: int64
+      paidSats:
+        type: string
+      error:
+        type: string
+      createdAt:
+        type: string
+      updatedAt:
+        type: string
+  TaskList:
+    type: object
+    required: [tasks]
+    properties:
+      tasks:
+        type: array
+        items:
+          $ref: '#/components/schemas/Task'
+  CreateTaskRequest:
+    type: object
+    required: [seedHashHex]
+    properties:
+      seedHashHex:
+        type: string
+  EventEnvelope:
+    type: object
+    required: [protocolVersion, instanceId, seq, topic]
+    properties:
+      protocolVersion:
+        type: string
+        enum: [v1]
+      instanceId:
+        type: string
+      seq:
+        type: integer
+        format: int64
+      topic:
+        type: string
+        enum: [connection, wallet, balance, task, roots, settings, collector]
+      entityId:
+        type: string
+      revision:
+        type: integer
+        format: int64
+      data:
+        type: object
+  SnapshotEvent:
+    type: object
+    required: [protocolVersion, instanceId, topics]
+    properties:
+      protocolVersion:
+        type: string
+        enum: [v1]
+      instanceId:
+        type: string
+      topics:
+        type: array
+        items:
+          type: string
+      revisions:
+        type: object
+      state:
+        type: object
+  BrowseRequest:
+    type: object
+    properties:
+      path:
+        type: string
+  RootRemoveRequest:
+    type: object
+    required: [id, revision]
+    properties:
+      id:
+        type: string
+      revision:
+        type: integer
+        format: int64
+  PricingClearRequest:
+    type: object
+    required: [rootId, path]
+    properties:
+      rootId:
+        type: string
+      path:
+        type: string
+  TaskGetRequest:
+    type: object
+    required: [seedHashHex]
+    properties:
+      seedHashHex:
+        type: string
+  TaskCancelRequest:
+    type: object
+    required: [seedHashHex]
+    properties:
+      seedHashHex:
+        type: string
+  TaskSubscribeRequest:
+    type: object
+    required: [seedHashHex]
+    properties:
+      seedHashHex:
+        type: string
+  EventsSubscribeRequest:
+    type: object
+    properties:
+      topics:
+        type: array
+        items:
+          type: string
+  JsonValue:
+    type: object
+    description: 业务明确允许的任意 JSON（递归 JSON 类型，不以无约束 any 代替协议设计）
+  WalletCreateRequest:
+    type: object
+    required: [password, network]
+    properties:
+      password:
+        type: string
+      network:
+        type: string
+  WalletCreateResponse:
+    type: object
+    required: [ok]
+    properties:
+      ok:
+        type: boolean
+  WalletImportRequest:
+    type: object
+    required: [password, keyMaterial]
+    properties:
+      password:
+        type: string
+      keyMaterial:
+        type: string
+  WalletImportResponse:
+    type: object
+    required: [ok]
+    properties:
+      ok:
+        type: boolean
+  ConnectApprovalsView:
+    type: object
+    required: [approvals]
+    properties:
+      approvals:
+        type: array
+        items:
+          type: object
+  ConnectApprovalDecideRequest:
+    type: object
+    required: [approvalId, decision]
+    properties:
+      approvalId:
+        type: string
+      decision:
+        type: string
+  ConnectApprovalDecideResponse:
+    type: object
+    required: [ok]
+    properties:
+      ok:
+        type: boolean
+  ConnectBindingsView:
+    type: object
+    required: [bindings]
+    properties:
+      bindings:
+        type: array
+        items:
+          type: object
+  ConnectAuthView:
+    type: object
+    required: [authorizations]
+    properties:
+      authorizations:
+        type: array
+        items:
+          type: object
+  ConnectAuthRevokeRequest:
+    type: object
+    required: [appPublicKey]
+    properties:
+      appPublicKey:
+        type: string
+  ConnectExecRequest:
+    type: object
+    properties:
+      requestId:
+        type: string
+      approvalId:
+        type: string
+      proof:
+        type: object
+      method:
+        type: string
+      params:
+        type: object
+      origin:
+        type: string
+      authorizationId:
+        type: string
+  StoragePutRequest:
+    type: object
+    required: [network, walletPublicKey, appPublicKey, path]
+    properties:
+      network:
+        type: string
+      walletPublicKey:
+        type: string
+      appPublicKey:
+        type: string
+      path:
+        type: string
+      mime:
+        type: string
+      ifNoneMatch:
+        type: string
+  StoragePutResponse:
+    type: object
+    required: [revision]
+    properties:
+      revision:
+        type: integer
+        format: int64
+      updatedAt:
+        type: integer
+        format: int64
+  StorageGetRequest:
+    type: object
+    required: [network, walletPublicKey, appPublicKey, path]
+    properties:
+      network:
+        type: string
+      walletPublicKey:
+        type: string
+      appPublicKey:
+        type: string
+      path:
+        type: string
+      offset:
+        type: integer
+        format: int64
+      length:
+        type: integer
+        format: int64
+      ifMatch:
+        type: string
+  StorageGetResponse:
+    type: object
+    required: [revision]
+    properties:
+      revision:
+        type: integer
+        format: int64
+      mime:
+        type: string
+      offset:
+        type: integer
+        format: int64
+      totalSize:
+        type: integer
+        format: int64
+      eof:
+        type: boolean
+  StorageListRequest:
+    type: object
+    required: [network, walletPublicKey, appPublicKey, prefix]
+    properties:
+      network:
+        type: string
+      walletPublicKey:
+        type: string
+      appPublicKey:
+        type: string
+      prefix:
+        type: string
+      cursor:
+        type: string
+      limit:
+        type: integer
+  StorageListResponse:
+    type: object
+    required: [entries]
+    properties:
+      entries:
+        type: array
+        items:
+          type: object
+      nextCursor:
+        type: string
+  StorageDeleteRequest:
+    type: object
+    required: [network, walletPublicKey, appPublicKey, path]
+    properties:
+      network:
+        type: string
+      walletPublicKey:
+        type: string
+      appPublicKey:
+        type: string
+      path:
+        type: string

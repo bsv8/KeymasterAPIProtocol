@@ -1,7 +1,7 @@
 {
   "name": "keymaster-api-protocol",
   "version": "0.1.0",
-  "description": "Keymaster 后台业务 API v1 契约 SDK（DTO 与 HTTP/SSE 客户端，Go/TS 同契约）",
+  "description": "Keymaster 后台业务 API v1 契约 SDK（DTO 与 WebSocket/进程内客户端，Go/TS 同契约）",
   "license": "AGPL-3.0-only",
   "type": "module",
   "exports": {

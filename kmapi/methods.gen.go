@@ -19,6 +19,7 @@ const (
 	MethodConnectAuthList        = "connect.auth.list"        // params=nil result=ConnectAuthView timeout=short
 	MethodConnectAuthRevoke      = "connect.auth.revoke"      // params=ConnectAuthRevokeRequest result=Ok timeout=short
 	MethodConnectBindingsList    = "connect.bindings.list"    // params=nil result=ConnectBindingsView timeout=short
+	MethodConnectLaunchIssue     = "connect.launch.issue"     // params=ConnectLaunchIssueRequest result=ConnectLaunchIssueResponse timeout=short
 	MethodConnectRequestExec     = "connect.request.exec"     // params=ConnectExecRequest result=JsonValue timeout=connect
 	MethodEventsSubscribe        = "events.subscribe"         // params=EventsSubscribeRequest result=SnapshotEvent timeout=stream
 	MethodFilesBrowse            = "files.browse"             // params=BrowseRequest result=BrowseView timeout=short
@@ -64,6 +65,7 @@ var MethodTimeout = map[string]string{
 	"connect.auth.list":        "short",
 	"connect.auth.revoke":      "short",
 	"connect.bindings.list":    "short",
+	"connect.launch.issue":     "short",
 	"connect.request.exec":     "connect",
 	"events.subscribe":         "stream",
 	"files.browse":             "short",
@@ -109,6 +111,7 @@ var MethodParams = map[string]string{
 	"connect.auth.list":        "null",
 	"connect.auth.revoke":      "ConnectAuthRevokeRequest",
 	"connect.bindings.list":    "null",
+	"connect.launch.issue":     "ConnectLaunchIssueRequest",
 	"connect.request.exec":     "ConnectExecRequest",
 	"events.subscribe":         "EventsSubscribeRequest",
 	"files.browse":             "BrowseRequest",
@@ -154,6 +157,7 @@ var MethodResult = map[string]string{
 	"connect.auth.list":        "ConnectAuthView",
 	"connect.auth.revoke":      "Ok",
 	"connect.bindings.list":    "ConnectBindingsView",
+	"connect.launch.issue":     "ConnectLaunchIssueResponse",
 	"connect.request.exec":     "JsonValue",
 	"events.subscribe":         "SnapshotEvent",
 	"files.browse":             "BrowseView",
@@ -190,7 +194,7 @@ const (
 	ErrCancelled        = "CANCELLED"
 	ErrConflict         = "CONFLICT"
 	ErrForbidden        = "FORBIDDEN"
-	ErrIDentityRequired = "IDENTITY_REQUIRED"
+	ErrIdentityRequired = "IDENTITY_REQUIRED"
 	ErrInternal         = "INTERNAL"
 	ErrLocked           = "LOCKED"
 	ErrNotFound         = "NOT_FOUND"

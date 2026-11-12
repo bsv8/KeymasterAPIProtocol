@@ -153,6 +153,24 @@ type ConnectExecRequest struct {
 	RequestID       *string        `json:"requestId,omitempty"`
 }
 
+type ConnectLaunchAppIdentity struct {
+	AppID                 string   `json:"appId"`
+	AppName               string   `json:"appName"`
+	IdentityDigestHex     string   `json:"identityDigestHex"`
+	PublisherPublicKeyHex string   `json:"publisherPublicKeyHex"`
+	Requirements          []string `json:"requirements"`
+}
+
+type ConnectLaunchIssueRequest struct {
+	Origin string `json:"origin"`
+}
+
+type ConnectLaunchIssueResponse struct {
+	AppIdentity ConnectLaunchAppIdentity `json:"appIdentity"`
+	ExpiresAt   int                      `json:"expiresAt"`
+	LaunchToken string                   `json:"launchToken"`
+}
+
 type CreateTaskRequest struct {
 	SeedHashHex string `json:"seedHashHex"`
 }

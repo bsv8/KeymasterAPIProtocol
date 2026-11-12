@@ -152,6 +152,24 @@ export interface ConnectExecRequest {
   requestId?: string;
 }
 
+export interface ConnectLaunchAppIdentity {
+  appId: string;
+  appName: string;
+  identityDigestHex: string;
+  publisherPublicKeyHex: string;
+  requirements: string[];
+}
+
+export interface ConnectLaunchIssueRequest {
+  origin: string;
+}
+
+export interface ConnectLaunchIssueResponse {
+  appIdentity: ConnectLaunchAppIdentity;
+  expiresAt: number;
+  launchToken: string;
+}
+
 export interface CreateTaskRequest {
   seedHashHex: string;
 }

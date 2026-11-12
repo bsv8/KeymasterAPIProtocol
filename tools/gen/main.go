@@ -64,6 +64,8 @@ func goName(s string) string {
 	out = strings.ReplaceAll(out, "Id", "ID")
 	out = strings.ReplaceAll(out, "Api", "API")
 	out = strings.ReplaceAll(out, "Url", "URL")
+	// "Identity" 不是 "Id" 缩写：先还原被上一条规则误改的完整单词。
+	out = strings.ReplaceAll(out, "IDentity", "Identity")
 	return out
 }
 

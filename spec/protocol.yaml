@@ -260,6 +260,11 @@ methods:
     result: JsonValue
     timeout: connect
     description: 执行已审批原请求；App 上下文禁止进入钱包管理方法
+  - name: connect.launch.issue
+    params: ConnectLaunchIssueRequest
+    result: ConnectLaunchIssueResponse
+    timeout: short
+    description: 钱包主动启动应用：签发一次性启动令牌；钱包管理上下文，需已初始化并解锁
   - name: storage.put
     params: StoragePutRequest
     result: StoragePutResponse
@@ -1123,6 +1128,39 @@ schemas:
         type: string
       authorizationId:
         type: string
+  ConnectLaunchIssueRequest:
+    type: object
+    required: [origin]
+    properties:
+      origin:
+        type: string
+  ConnectLaunchIssueResponse:
+    type: object
+    required: [launchToken, expiresAt, appIdentity]
+    properties:
+      launchToken:
+        type: string
+      expiresAt:
+        type: integer
+      appIdentity:
+        $ref: '#/components/schemas/ConnectLaunchAppIdentity'
+  ConnectLaunchAppIdentity:
+    type: object
+    required: [publisherPublicKeyHex, appId, appName, identityDigestHex, requirements]
+    description: 钱包主动启动时解析并绑定的 App 身份快照；launch 消费时 proof 摘要必须与之完全一致，不接受替换或扩大权限
+    properties:
+      publisherPublicKeyHex:
+        type: string
+      appId:
+        type: string
+      appName:
+        type: string
+      identityDigestHex:
+        type: string
+      requirements:
+        type: array
+        items:
+          type: string
   StoragePutRequest:
     type: object
     required: [network, walletPublicKey, appPublicKey, path]

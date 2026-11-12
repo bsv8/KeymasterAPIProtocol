@@ -17,6 +17,7 @@ export const MethodConnectApprovalsList = "connect.approvals.list"; // params=nu
 export const MethodConnectAuthList = "connect.auth.list"; // params=null result=ConnectAuthView timeout=short
 export const MethodConnectAuthRevoke = "connect.auth.revoke"; // params=ConnectAuthRevokeRequest result=Ok timeout=short
 export const MethodConnectBindingsList = "connect.bindings.list"; // params=null result=ConnectBindingsView timeout=short
+export const MethodConnectLaunchIssue = "connect.launch.issue"; // params=ConnectLaunchIssueRequest result=ConnectLaunchIssueResponse timeout=short
 export const MethodConnectRequestExec = "connect.request.exec"; // params=ConnectExecRequest result=JsonValue timeout=connect
 export const MethodEventsSubscribe = "events.subscribe"; // params=EventsSubscribeRequest result=SnapshotEvent timeout=stream
 export const MethodFilesBrowse = "files.browse"; // params=BrowseRequest result=BrowseView timeout=short
@@ -60,6 +61,7 @@ export const MethodTimeout: Record<string, string> = {
   "connect.auth.list": "short",
   "connect.auth.revoke": "short",
   "connect.bindings.list": "short",
+  "connect.launch.issue": "short",
   "connect.request.exec": "connect",
   "events.subscribe": "stream",
   "files.browse": "short",
@@ -104,6 +106,7 @@ export const MethodParams: Record<string, string> = {
   "connect.auth.list": "null",
   "connect.auth.revoke": "ConnectAuthRevokeRequest",
   "connect.bindings.list": "null",
+  "connect.launch.issue": "ConnectLaunchIssueRequest",
   "connect.request.exec": "ConnectExecRequest",
   "events.subscribe": "EventsSubscribeRequest",
   "files.browse": "BrowseRequest",
@@ -148,6 +151,7 @@ export const MethodResult: Record<string, string> = {
   "connect.auth.list": "ConnectAuthView",
   "connect.auth.revoke": "Ok",
   "connect.bindings.list": "ConnectBindingsView",
+  "connect.launch.issue": "ConnectLaunchIssueResponse",
   "connect.request.exec": "JsonValue",
   "events.subscribe": "SnapshotEvent",
   "files.browse": "BrowseView",

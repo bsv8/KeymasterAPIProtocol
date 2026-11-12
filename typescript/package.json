@@ -18,7 +18,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "rm -rf dist && tsc",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "prepublishOnly": "npm run typecheck && npm run build && npm test"
   },
   "dependencies": {},

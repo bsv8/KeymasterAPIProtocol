@@ -475,8 +475,8 @@ export class KmWSClient {
   async approvalsList(): Promise<unknown> {
     return this.call(undefined, "connect.approvals.list");
   }
-  async approvalsDecide(approvalId: string, decision: string): Promise<unknown> {
-    return this.call(undefined, "connect.approvals.decide", { approvalId, decision });
+  async approvalsDecide(approvalId: string, decision: string, grantAuto?: boolean): Promise<unknown> {
+    return this.call(undefined, "connect.approvals.decide", grantAuto === undefined ? { approvalId, decision } : { approvalId, decision, grantAuto });
   }
   async bindingsList(): Promise<unknown> {
     return this.call(undefined, "connect.bindings.list");
@@ -484,8 +484,26 @@ export class KmWSClient {
   async authList(): Promise<unknown> {
     return this.call(undefined, "connect.auth.list");
   }
-  async authRevoke(appPublicKey: string): Promise<unknown> {
-    return this.call(undefined, "connect.auth.revoke", { appPublicKey });
+  async authRevoke(origin: string, appPublicKey: string, appId: string): Promise<unknown> {
+    return this.call(undefined, "connect.auth.revoke", { origin, appPublicKey, appId });
+  }
+  async permissionsList(applicationKey?: string): Promise<unknown> {
+    return this.call(undefined, "connect.permissions.list", applicationKey ? { applicationKey } : {});
+  }
+  async permissionsRevoke(applicationKey: string, method: string): Promise<unknown> {
+    return this.call(undefined, "connect.permissions.revoke", { applicationKey, method });
+  }
+  async historyList(applicationKey?: string, limit?: number): Promise<unknown> {
+    const params: Record<string, unknown> = {};
+    if (applicationKey) params["applicationKey"] = applicationKey;
+    if (limit !== undefined) params["limit"] = limit;
+    return this.call(undefined, "connect.history.list", params);
+  }
+  async appsList(): Promise<unknown> {
+    return this.call(undefined, "connect.apps.list");
+  }
+  async connectionPause(authorizationId: string): Promise<unknown> {
+    return this.call(undefined, "connect.connection.pause", { authorizationId });
   }
   async connectExec(params: unknown): Promise<unknown> {
     return this.call(undefined, "connect.request.exec", params);

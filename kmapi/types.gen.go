@@ -121,6 +121,7 @@ type CollectorUpdate struct {
 type ConnectApprovalDecideRequest struct {
 	ApprovalID string `json:"approvalId"`
 	Decision   string `json:"decision"`
+	GrantAuto  *bool  `json:"grantAuto,omitempty"`
 }
 
 type ConnectApprovalDecideResponse struct {
@@ -131,8 +132,14 @@ type ConnectApprovalsView struct {
 	Approvals []map[string]any `json:"approvals"`
 }
 
+type ConnectAppsView struct {
+	Applications []map[string]any `json:"applications"`
+}
+
 type ConnectAuthRevokeRequest struct {
+	AppID        string `json:"appId"`
 	AppPublicKey string `json:"appPublicKey"`
+	Origin       string `json:"origin"`
 }
 
 type ConnectAuthView struct {
@@ -143,6 +150,10 @@ type ConnectBindingsView struct {
 	Bindings []map[string]any `json:"bindings"`
 }
 
+type ConnectConnectionPauseRequest struct {
+	AuthorizationID string `json:"authorizationId"`
+}
+
 type ConnectExecRequest struct {
 	ApprovalID      *string        `json:"approvalId,omitempty"`
 	AuthorizationID *string        `json:"authorizationId,omitempty"`
@@ -151,6 +162,15 @@ type ConnectExecRequest struct {
 	Params          map[string]any `json:"params,omitempty"`
 	Proof           map[string]any `json:"proof,omitempty"`
 	RequestID       *string        `json:"requestId,omitempty"`
+}
+
+type ConnectHistoryListRequest struct {
+	ApplicationKey *string `json:"applicationKey,omitempty"`
+	Limit          *int    `json:"limit,omitempty"`
+}
+
+type ConnectHistoryView struct {
+	Events []map[string]any `json:"events"`
 }
 
 type ConnectLaunchAppIdentity struct {
@@ -169,6 +189,19 @@ type ConnectLaunchIssueResponse struct {
 	AppIdentity ConnectLaunchAppIdentity `json:"appIdentity"`
 	ExpiresAt   int                      `json:"expiresAt"`
 	LaunchToken string                   `json:"launchToken"`
+}
+
+type ConnectPermissionsListRequest struct {
+	ApplicationKey *string `json:"applicationKey,omitempty"`
+}
+
+type ConnectPermissionsRevokeRequest struct {
+	ApplicationKey string `json:"applicationKey"`
+	Method         string `json:"method"`
+}
+
+type ConnectPermissionsView struct {
+	Permissions []map[string]any `json:"permissions"`
 }
 
 type CreateTaskRequest struct {

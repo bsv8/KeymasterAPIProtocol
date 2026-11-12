@@ -7,186 +7,206 @@ const APIVersion = "v1"
 const WSPath = "/api/ws"
 
 const (
-	MethodCatalogRefresh         = "catalog.refresh"          // params=CatalogRefreshRequest result=JsonValue timeout=short
-	MethodCollectorConfig        = "collector.config"         // params=CollectorConfigRequest result=Ok timeout=short
-	MethodCollectorDescribe      = "collector.describe"       // params=CollectorDescriptionRequest result=Ok timeout=short
-	MethodCollectorFlush         = "collector.flush"          // params=nil result=CollectorFlushResponse timeout=short
-	MethodCollectorHistory       = "collector.history"        // params=nil result=CollectorHistory timeout=short
-	MethodCollectorRetry         = "collector.retry"          // params=nil result=CollectorRetryResponse timeout=short
-	MethodCollectorStatus        = "collector.status"         // params=nil result=CollectorStatus timeout=short
-	MethodConnectApprovalsDecide = "connect.approvals.decide" // params=ConnectApprovalDecideRequest result=ConnectApprovalDecideResponse timeout=short
-	MethodConnectApprovalsList   = "connect.approvals.list"   // params=nil result=ConnectApprovalsView timeout=short
-	MethodConnectAuthList        = "connect.auth.list"        // params=nil result=ConnectAuthView timeout=short
-	MethodConnectAuthRevoke      = "connect.auth.revoke"      // params=ConnectAuthRevokeRequest result=Ok timeout=short
-	MethodConnectBindingsList    = "connect.bindings.list"    // params=nil result=ConnectBindingsView timeout=short
-	MethodConnectLaunchIssue     = "connect.launch.issue"     // params=ConnectLaunchIssueRequest result=ConnectLaunchIssueResponse timeout=short
-	MethodConnectRequestExec     = "connect.request.exec"     // params=ConnectExecRequest result=JsonValue timeout=connect
-	MethodEventsSubscribe        = "events.subscribe"         // params=EventsSubscribeRequest result=SnapshotEvent timeout=stream
-	MethodFilesBrowse            = "files.browse"             // params=BrowseRequest result=BrowseView timeout=short
-	MethodFilesList              = "files.list"               // params=nil result=FilesView timeout=short
-	MethodInfoGet                = "info.get"                 // params=nil result=Info timeout=short
-	MethodPricingBatch           = "pricing.batch"            // params=PricingBatchRequest result=PricingBatchResponse timeout=short
-	MethodPricingClearFile       = "pricing.clearFile"        // params=PricingClearRequest result=PricingClearResponse timeout=short
-	MethodPricingSetDefaults     = "pricing.setDefaults"      // params=PricingDefaultsRequest result=PricingDefaultsResponse timeout=short
-	MethodPricingSetFile         = "pricing.setFile"          // params=PricingFileRequest result=PricingFileResponse timeout=short
-	MethodRootsAdd               = "roots.add"                // params=AddRootRequest result=AddRootResponse timeout=short
-	MethodRootsList              = "roots.list"               // params=nil result=RootsView timeout=short
-	MethodRootsRemove            = "roots.remove"             // params=RootRemoveRequest result=RevisionedOk timeout=short
-	MethodRootsSetDefault        = "roots.setDefault"         // params=SetDefaultRootRequest result=RevisionedOk timeout=short
-	MethodSettingsGet            = "settings.get"             // params=nil result=Settings timeout=short
-	MethodSettingsReset          = "settings.reset"           // params=RevisionRequest result=Settings timeout=short
-	MethodSettingsUpdate         = "settings.update"          // params=SettingsUpdate result=Settings timeout=short
-	MethodStatusGet              = "status.get"               // params=nil result=Status timeout=probe
-	MethodStorageDelete          = "storage.delete"           // params=StorageDeleteRequest result=Ok timeout=short
-	MethodStorageGet             = "storage.get"              // params=StorageGetRequest result=StorageGetResponse timeout=short
-	MethodStorageList            = "storage.list"             // params=StorageListRequest result=StorageListResponse timeout=short
-	MethodStoragePut             = "storage.put"              // params=StoragePutRequest result=StoragePutResponse timeout=short
-	MethodTasksCancel            = "tasks.cancel"             // params=TaskCancelRequest result=Ok timeout=short
-	MethodTasksCreate            = "tasks.create"             // params=CreateTaskRequest result=Task timeout=long
-	MethodTasksGet               = "tasks.get"                // params=TaskGetRequest result=Task timeout=short
-	MethodTasksList              = "tasks.list"               // params=nil result=TaskList timeout=short
-	MethodTasksSubscribe         = "tasks.subscribe"          // params=TaskSubscribeRequest result=Task timeout=stream
-	MethodWalletCreate           = "wallet.create"            // params=WalletCreateRequest result=WalletCreateResponse timeout=long
-	MethodWalletImport           = "wallet.import"            // params=WalletImportRequest result=WalletImportResponse timeout=long
-	MethodWalletUnlock           = "wallet.unlock"            // params=UnlockRequest result=Ok timeout=long
+	MethodCatalogRefresh           = "catalog.refresh"            // params=CatalogRefreshRequest result=JsonValue timeout=short
+	MethodCollectorConfig          = "collector.config"           // params=CollectorConfigRequest result=Ok timeout=short
+	MethodCollectorDescribe        = "collector.describe"         // params=CollectorDescriptionRequest result=Ok timeout=short
+	MethodCollectorFlush           = "collector.flush"            // params=nil result=CollectorFlushResponse timeout=short
+	MethodCollectorHistory         = "collector.history"          // params=nil result=CollectorHistory timeout=short
+	MethodCollectorRetry           = "collector.retry"            // params=nil result=CollectorRetryResponse timeout=short
+	MethodCollectorStatus          = "collector.status"           // params=nil result=CollectorStatus timeout=short
+	MethodConnectApprovalsDecide   = "connect.approvals.decide"   // params=ConnectApprovalDecideRequest result=ConnectApprovalDecideResponse timeout=short
+	MethodConnectApprovalsList     = "connect.approvals.list"     // params=nil result=ConnectApprovalsView timeout=short
+	MethodConnectAppsList          = "connect.apps.list"          // params=nil result=ConnectAppsView timeout=short
+	MethodConnectAuthList          = "connect.auth.list"          // params=nil result=ConnectAuthView timeout=short
+	MethodConnectAuthRevoke        = "connect.auth.revoke"        // params=ConnectAuthRevokeRequest result=Ok timeout=short
+	MethodConnectBindingsList      = "connect.bindings.list"      // params=nil result=ConnectBindingsView timeout=short
+	MethodConnectConnectionPause   = "connect.connection.pause"   // params=ConnectConnectionPauseRequest result=Ok timeout=short
+	MethodConnectHistoryList       = "connect.history.list"       // params=ConnectHistoryListRequest result=ConnectHistoryView timeout=short
+	MethodConnectLaunchIssue       = "connect.launch.issue"       // params=ConnectLaunchIssueRequest result=ConnectLaunchIssueResponse timeout=short
+	MethodConnectPermissionsList   = "connect.permissions.list"   // params=ConnectPermissionsListRequest result=ConnectPermissionsView timeout=short
+	MethodConnectPermissionsRevoke = "connect.permissions.revoke" // params=ConnectPermissionsRevokeRequest result=Ok timeout=short
+	MethodConnectRequestExec       = "connect.request.exec"       // params=ConnectExecRequest result=JsonValue timeout=connect
+	MethodEventsSubscribe          = "events.subscribe"           // params=EventsSubscribeRequest result=SnapshotEvent timeout=stream
+	MethodFilesBrowse              = "files.browse"               // params=BrowseRequest result=BrowseView timeout=short
+	MethodFilesList                = "files.list"                 // params=nil result=FilesView timeout=short
+	MethodInfoGet                  = "info.get"                   // params=nil result=Info timeout=short
+	MethodPricingBatch             = "pricing.batch"              // params=PricingBatchRequest result=PricingBatchResponse timeout=short
+	MethodPricingClearFile         = "pricing.clearFile"          // params=PricingClearRequest result=PricingClearResponse timeout=short
+	MethodPricingSetDefaults       = "pricing.setDefaults"        // params=PricingDefaultsRequest result=PricingDefaultsResponse timeout=short
+	MethodPricingSetFile           = "pricing.setFile"            // params=PricingFileRequest result=PricingFileResponse timeout=short
+	MethodRootsAdd                 = "roots.add"                  // params=AddRootRequest result=AddRootResponse timeout=short
+	MethodRootsList                = "roots.list"                 // params=nil result=RootsView timeout=short
+	MethodRootsRemove              = "roots.remove"               // params=RootRemoveRequest result=RevisionedOk timeout=short
+	MethodRootsSetDefault          = "roots.setDefault"           // params=SetDefaultRootRequest result=RevisionedOk timeout=short
+	MethodSettingsGet              = "settings.get"               // params=nil result=Settings timeout=short
+	MethodSettingsReset            = "settings.reset"             // params=RevisionRequest result=Settings timeout=short
+	MethodSettingsUpdate           = "settings.update"            // params=SettingsUpdate result=Settings timeout=short
+	MethodStatusGet                = "status.get"                 // params=nil result=Status timeout=probe
+	MethodStorageDelete            = "storage.delete"             // params=StorageDeleteRequest result=Ok timeout=short
+	MethodStorageGet               = "storage.get"                // params=StorageGetRequest result=StorageGetResponse timeout=short
+	MethodStorageList              = "storage.list"               // params=StorageListRequest result=StorageListResponse timeout=short
+	MethodStoragePut               = "storage.put"                // params=StoragePutRequest result=StoragePutResponse timeout=short
+	MethodTasksCancel              = "tasks.cancel"               // params=TaskCancelRequest result=Ok timeout=short
+	MethodTasksCreate              = "tasks.create"               // params=CreateTaskRequest result=Task timeout=long
+	MethodTasksGet                 = "tasks.get"                  // params=TaskGetRequest result=Task timeout=short
+	MethodTasksList                = "tasks.list"                 // params=nil result=TaskList timeout=short
+	MethodTasksSubscribe           = "tasks.subscribe"            // params=TaskSubscribeRequest result=Task timeout=stream
+	MethodWalletCreate             = "wallet.create"              // params=WalletCreateRequest result=WalletCreateResponse timeout=long
+	MethodWalletImport             = "wallet.import"              // params=WalletImportRequest result=WalletImportResponse timeout=long
+	MethodWalletUnlock             = "wallet.unlock"              // params=UnlockRequest result=Ok timeout=long
 )
 
 // MethodTimeout 将方法映射到超时类别：probe/short/long/stream/connect。
 var MethodTimeout = map[string]string{
-	"catalog.refresh":          "short",
-	"collector.config":         "short",
-	"collector.describe":       "short",
-	"collector.flush":          "short",
-	"collector.history":        "short",
-	"collector.retry":          "short",
-	"collector.status":         "short",
-	"connect.approvals.decide": "short",
-	"connect.approvals.list":   "short",
-	"connect.auth.list":        "short",
-	"connect.auth.revoke":      "short",
-	"connect.bindings.list":    "short",
-	"connect.launch.issue":     "short",
-	"connect.request.exec":     "connect",
-	"events.subscribe":         "stream",
-	"files.browse":             "short",
-	"files.list":               "short",
-	"info.get":                 "short",
-	"pricing.batch":            "short",
-	"pricing.clearFile":        "short",
-	"pricing.setDefaults":      "short",
-	"pricing.setFile":          "short",
-	"roots.add":                "short",
-	"roots.list":               "short",
-	"roots.remove":             "short",
-	"roots.setDefault":         "short",
-	"settings.get":             "short",
-	"settings.reset":           "short",
-	"settings.update":          "short",
-	"status.get":               "probe",
-	"storage.delete":           "short",
-	"storage.get":              "short",
-	"storage.list":             "short",
-	"storage.put":              "short",
-	"tasks.cancel":             "short",
-	"tasks.create":             "long",
-	"tasks.get":                "short",
-	"tasks.list":               "short",
-	"tasks.subscribe":          "stream",
-	"wallet.create":            "long",
-	"wallet.import":            "long",
-	"wallet.unlock":            "long",
+	"catalog.refresh":            "short",
+	"collector.config":           "short",
+	"collector.describe":         "short",
+	"collector.flush":            "short",
+	"collector.history":          "short",
+	"collector.retry":            "short",
+	"collector.status":           "short",
+	"connect.approvals.decide":   "short",
+	"connect.approvals.list":     "short",
+	"connect.apps.list":          "short",
+	"connect.auth.list":          "short",
+	"connect.auth.revoke":        "short",
+	"connect.bindings.list":      "short",
+	"connect.connection.pause":   "short",
+	"connect.history.list":       "short",
+	"connect.launch.issue":       "short",
+	"connect.permissions.list":   "short",
+	"connect.permissions.revoke": "short",
+	"connect.request.exec":       "connect",
+	"events.subscribe":           "stream",
+	"files.browse":               "short",
+	"files.list":                 "short",
+	"info.get":                   "short",
+	"pricing.batch":              "short",
+	"pricing.clearFile":          "short",
+	"pricing.setDefaults":        "short",
+	"pricing.setFile":            "short",
+	"roots.add":                  "short",
+	"roots.list":                 "short",
+	"roots.remove":               "short",
+	"roots.setDefault":           "short",
+	"settings.get":               "short",
+	"settings.reset":             "short",
+	"settings.update":            "short",
+	"status.get":                 "probe",
+	"storage.delete":             "short",
+	"storage.get":                "short",
+	"storage.list":               "short",
+	"storage.put":                "short",
+	"tasks.cancel":               "short",
+	"tasks.create":               "long",
+	"tasks.get":                  "short",
+	"tasks.list":                 "short",
+	"tasks.subscribe":            "stream",
+	"wallet.create":              "long",
+	"wallet.import":              "long",
+	"wallet.unlock":              "long",
 }
 
 // MethodParams 将方法映射到参数类型名（null 表示无参数）。
 var MethodParams = map[string]string{
-	"catalog.refresh":          "CatalogRefreshRequest",
-	"collector.config":         "CollectorConfigRequest",
-	"collector.describe":       "CollectorDescriptionRequest",
-	"collector.flush":          "null",
-	"collector.history":        "null",
-	"collector.retry":          "null",
-	"collector.status":         "null",
-	"connect.approvals.decide": "ConnectApprovalDecideRequest",
-	"connect.approvals.list":   "null",
-	"connect.auth.list":        "null",
-	"connect.auth.revoke":      "ConnectAuthRevokeRequest",
-	"connect.bindings.list":    "null",
-	"connect.launch.issue":     "ConnectLaunchIssueRequest",
-	"connect.request.exec":     "ConnectExecRequest",
-	"events.subscribe":         "EventsSubscribeRequest",
-	"files.browse":             "BrowseRequest",
-	"files.list":               "null",
-	"info.get":                 "null",
-	"pricing.batch":            "PricingBatchRequest",
-	"pricing.clearFile":        "PricingClearRequest",
-	"pricing.setDefaults":      "PricingDefaultsRequest",
-	"pricing.setFile":          "PricingFileRequest",
-	"roots.add":                "AddRootRequest",
-	"roots.list":               "null",
-	"roots.remove":             "RootRemoveRequest",
-	"roots.setDefault":         "SetDefaultRootRequest",
-	"settings.get":             "null",
-	"settings.reset":           "RevisionRequest",
-	"settings.update":          "SettingsUpdate",
-	"status.get":               "null",
-	"storage.delete":           "StorageDeleteRequest",
-	"storage.get":              "StorageGetRequest",
-	"storage.list":             "StorageListRequest",
-	"storage.put":              "StoragePutRequest",
-	"tasks.cancel":             "TaskCancelRequest",
-	"tasks.create":             "CreateTaskRequest",
-	"tasks.get":                "TaskGetRequest",
-	"tasks.list":               "null",
-	"tasks.subscribe":          "TaskSubscribeRequest",
-	"wallet.create":            "WalletCreateRequest",
-	"wallet.import":            "WalletImportRequest",
-	"wallet.unlock":            "UnlockRequest",
+	"catalog.refresh":            "CatalogRefreshRequest",
+	"collector.config":           "CollectorConfigRequest",
+	"collector.describe":         "CollectorDescriptionRequest",
+	"collector.flush":            "null",
+	"collector.history":          "null",
+	"collector.retry":            "null",
+	"collector.status":           "null",
+	"connect.approvals.decide":   "ConnectApprovalDecideRequest",
+	"connect.approvals.list":     "null",
+	"connect.apps.list":          "null",
+	"connect.auth.list":          "null",
+	"connect.auth.revoke":        "ConnectAuthRevokeRequest",
+	"connect.bindings.list":      "null",
+	"connect.connection.pause":   "ConnectConnectionPauseRequest",
+	"connect.history.list":       "ConnectHistoryListRequest",
+	"connect.launch.issue":       "ConnectLaunchIssueRequest",
+	"connect.permissions.list":   "ConnectPermissionsListRequest",
+	"connect.permissions.revoke": "ConnectPermissionsRevokeRequest",
+	"connect.request.exec":       "ConnectExecRequest",
+	"events.subscribe":           "EventsSubscribeRequest",
+	"files.browse":               "BrowseRequest",
+	"files.list":                 "null",
+	"info.get":                   "null",
+	"pricing.batch":              "PricingBatchRequest",
+	"pricing.clearFile":          "PricingClearRequest",
+	"pricing.setDefaults":        "PricingDefaultsRequest",
+	"pricing.setFile":            "PricingFileRequest",
+	"roots.add":                  "AddRootRequest",
+	"roots.list":                 "null",
+	"roots.remove":               "RootRemoveRequest",
+	"roots.setDefault":           "SetDefaultRootRequest",
+	"settings.get":               "null",
+	"settings.reset":             "RevisionRequest",
+	"settings.update":            "SettingsUpdate",
+	"status.get":                 "null",
+	"storage.delete":             "StorageDeleteRequest",
+	"storage.get":                "StorageGetRequest",
+	"storage.list":               "StorageListRequest",
+	"storage.put":                "StoragePutRequest",
+	"tasks.cancel":               "TaskCancelRequest",
+	"tasks.create":               "CreateTaskRequest",
+	"tasks.get":                  "TaskGetRequest",
+	"tasks.list":                 "null",
+	"tasks.subscribe":            "TaskSubscribeRequest",
+	"wallet.create":              "WalletCreateRequest",
+	"wallet.import":              "WalletImportRequest",
+	"wallet.unlock":              "UnlockRequest",
 }
 
 // MethodResult 将方法映射到结果类型名。
 var MethodResult = map[string]string{
-	"catalog.refresh":          "JsonValue",
-	"collector.config":         "Ok",
-	"collector.describe":       "Ok",
-	"collector.flush":          "CollectorFlushResponse",
-	"collector.history":        "CollectorHistory",
-	"collector.retry":          "CollectorRetryResponse",
-	"collector.status":         "CollectorStatus",
-	"connect.approvals.decide": "ConnectApprovalDecideResponse",
-	"connect.approvals.list":   "ConnectApprovalsView",
-	"connect.auth.list":        "ConnectAuthView",
-	"connect.auth.revoke":      "Ok",
-	"connect.bindings.list":    "ConnectBindingsView",
-	"connect.launch.issue":     "ConnectLaunchIssueResponse",
-	"connect.request.exec":     "JsonValue",
-	"events.subscribe":         "SnapshotEvent",
-	"files.browse":             "BrowseView",
-	"files.list":               "FilesView",
-	"info.get":                 "Info",
-	"pricing.batch":            "PricingBatchResponse",
-	"pricing.clearFile":        "PricingClearResponse",
-	"pricing.setDefaults":      "PricingDefaultsResponse",
-	"pricing.setFile":          "PricingFileResponse",
-	"roots.add":                "AddRootResponse",
-	"roots.list":               "RootsView",
-	"roots.remove":             "RevisionedOk",
-	"roots.setDefault":         "RevisionedOk",
-	"settings.get":             "Settings",
-	"settings.reset":           "Settings",
-	"settings.update":          "Settings",
-	"status.get":               "Status",
-	"storage.delete":           "Ok",
-	"storage.get":              "StorageGetResponse",
-	"storage.list":             "StorageListResponse",
-	"storage.put":              "StoragePutResponse",
-	"tasks.cancel":             "Ok",
-	"tasks.create":             "Task",
-	"tasks.get":                "Task",
-	"tasks.list":               "TaskList",
-	"tasks.subscribe":          "Task",
-	"wallet.create":            "WalletCreateResponse",
-	"wallet.import":            "WalletImportResponse",
-	"wallet.unlock":            "Ok",
+	"catalog.refresh":            "JsonValue",
+	"collector.config":           "Ok",
+	"collector.describe":         "Ok",
+	"collector.flush":            "CollectorFlushResponse",
+	"collector.history":          "CollectorHistory",
+	"collector.retry":            "CollectorRetryResponse",
+	"collector.status":           "CollectorStatus",
+	"connect.approvals.decide":   "ConnectApprovalDecideResponse",
+	"connect.approvals.list":     "ConnectApprovalsView",
+	"connect.apps.list":          "ConnectAppsView",
+	"connect.auth.list":          "ConnectAuthView",
+	"connect.auth.revoke":        "Ok",
+	"connect.bindings.list":      "ConnectBindingsView",
+	"connect.connection.pause":   "Ok",
+	"connect.history.list":       "ConnectHistoryView",
+	"connect.launch.issue":       "ConnectLaunchIssueResponse",
+	"connect.permissions.list":   "ConnectPermissionsView",
+	"connect.permissions.revoke": "Ok",
+	"connect.request.exec":       "JsonValue",
+	"events.subscribe":           "SnapshotEvent",
+	"files.browse":               "BrowseView",
+	"files.list":                 "FilesView",
+	"info.get":                   "Info",
+	"pricing.batch":              "PricingBatchResponse",
+	"pricing.clearFile":          "PricingClearResponse",
+	"pricing.setDefaults":        "PricingDefaultsResponse",
+	"pricing.setFile":            "PricingFileResponse",
+	"roots.add":                  "AddRootResponse",
+	"roots.list":                 "RootsView",
+	"roots.remove":               "RevisionedOk",
+	"roots.setDefault":           "RevisionedOk",
+	"settings.get":               "Settings",
+	"settings.reset":             "Settings",
+	"settings.update":            "Settings",
+	"status.get":                 "Status",
+	"storage.delete":             "Ok",
+	"storage.get":                "StorageGetResponse",
+	"storage.list":               "StorageListResponse",
+	"storage.put":                "StoragePutResponse",
+	"tasks.cancel":               "Ok",
+	"tasks.create":               "Task",
+	"tasks.get":                  "Task",
+	"tasks.list":                 "TaskList",
+	"tasks.subscribe":            "Task",
+	"wallet.create":              "WalletCreateResponse",
+	"wallet.import":              "WalletImportResponse",
+	"wallet.unlock":              "Ok",
 }
 
 const (
@@ -209,6 +229,7 @@ const (
 var KnownTopics = []string{
 	"balance",
 	"collector",
+	"connect",
 	"connection",
 	"roots",
 	"settings",

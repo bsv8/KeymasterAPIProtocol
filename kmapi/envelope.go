@@ -11,6 +11,7 @@ const (
 	TopicRoots      = "roots"
 	TopicSettings   = "settings"
 	TopicCollector  = "collector"
+	TopicConnect    = "connect"
 )
 
 const (

@@ -120,6 +120,7 @@ export interface CollectorUpdate {
 export interface ConnectApprovalDecideRequest {
   approvalId: string;
   decision: string;
+  grantAuto?: boolean;
 }
 
 export interface ConnectApprovalDecideResponse {
@@ -130,8 +131,14 @@ export interface ConnectApprovalsView {
   approvals: Record<string, unknown>[];
 }
 
+export interface ConnectAppsView {
+  applications: Record<string, unknown>[];
+}
+
 export interface ConnectAuthRevokeRequest {
+  appId: string;
   appPublicKey: string;
+  origin: string;
 }
 
 export interface ConnectAuthView {
@@ -142,6 +149,10 @@ export interface ConnectBindingsView {
   bindings: Record<string, unknown>[];
 }
 
+export interface ConnectConnectionPauseRequest {
+  authorizationId: string;
+}
+
 export interface ConnectExecRequest {
   approvalId?: string;
   authorizationId?: string;
@@ -150,6 +161,15 @@ export interface ConnectExecRequest {
   params?: Record<string, unknown>;
   proof?: Record<string, unknown>;
   requestId?: string;
+}
+
+export interface ConnectHistoryListRequest {
+  applicationKey?: string;
+  limit?: number;
+}
+
+export interface ConnectHistoryView {
+  events: Record<string, unknown>[];
 }
 
 export interface ConnectLaunchAppIdentity {
@@ -168,6 +188,19 @@ export interface ConnectLaunchIssueResponse {
   appIdentity: ConnectLaunchAppIdentity;
   expiresAt: number;
   launchToken: string;
+}
+
+export interface ConnectPermissionsListRequest {
+  applicationKey?: string;
+}
+
+export interface ConnectPermissionsRevokeRequest {
+  applicationKey: string;
+  method: string;
+}
+
+export interface ConnectPermissionsView {
+  permissions: Record<string, unknown>[];
 }
 
 export interface CreateTaskRequest {

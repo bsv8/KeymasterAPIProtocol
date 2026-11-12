@@ -74,6 +74,7 @@ topics:
   - roots
   - settings
   - collector
+  - connect
 methods:
   - name: status.get
     params: null
@@ -254,7 +255,32 @@ methods:
     params: ConnectAuthRevokeRequest
     result: Ok
     timeout: short
-    description: 撤销 App 授权（新增）
+    description: 按精确应用身份撤销该应用连接，不影响同发行人其他 App 或其他来源
+  - name: connect.permissions.list
+    params: ConnectPermissionsListRequest
+    result: ConnectPermissionsView
+    timeout: short
+    description: 查询应用自动许可（设置页只能取消，不能授予）
+  - name: connect.permissions.revoke
+    params: ConnectPermissionsRevokeRequest
+    result: Ok
+    timeout: short
+    description: 取消单项自动许可，新请求恢复逐次询问
+  - name: connect.history.list
+    params: ConnectHistoryListRequest
+    result: ConnectHistoryView
+    timeout: short
+    description: 应用历史（人工/自动处理、执行结果、连接与许可变更）
+  - name: connect.apps.list
+    params: null
+    result: ConnectAppsView
+    timeout: short
+    description: 应用中心：按精确身份分组的应用、会话、许可与历史可用性
+  - name: connect.connection.pause
+    params: ConnectConnectionPauseRequest
+    result: Ok
+    timeout: short
+    description: 暂停运行连接（保留授权，由原应用 resume 重新握手恢复）
   - name: connect.request.exec
     params: ConnectExecRequest
     result: JsonValue
@@ -1083,6 +1109,58 @@ schemas:
         type: string
       decision:
         type: string
+      grantAuto:
+        type: boolean
+  ConnectPermissionsListRequest:
+    type: object
+    properties:
+      applicationKey:
+        type: string
+  ConnectPermissionsView:
+    type: object
+    required: [permissions]
+    properties:
+      permissions:
+        type: array
+        items:
+          type: object
+  ConnectPermissionsRevokeRequest:
+    type: object
+    required: [applicationKey, method]
+    properties:
+      applicationKey:
+        type: string
+      method:
+        type: string
+  ConnectHistoryListRequest:
+    type: object
+    properties:
+      applicationKey:
+        type: string
+      limit:
+        type: integer
+  ConnectHistoryView:
+    type: object
+    required: [events]
+    properties:
+      events:
+        type: array
+        items:
+          type: object
+  ConnectAppsView:
+    type: object
+    required: [applications]
+    properties:
+      applications:
+        type: array
+        items:
+          type: object
+  ConnectConnectionPauseRequest:
+    type: object
+    required: [authorizationId]
+    properties:
+      authorizationId:
+        type: string
   ConnectApprovalDecideResponse:
     type: object
     required: [ok]
@@ -1107,9 +1185,13 @@ schemas:
           type: object
   ConnectAuthRevokeRequest:
     type: object
-    required: [appPublicKey]
+    required: [origin, appPublicKey, appId]
     properties:
+      origin:
+        type: string
       appPublicKey:
+        type: string
+      appId:
         type: string
   ConnectExecRequest:
     type: object

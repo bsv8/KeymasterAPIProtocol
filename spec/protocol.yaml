@@ -255,7 +255,7 @@ methods:
     params: ConnectAuthRevokeRequest
     result: Ok
     timeout: short
-    description: 按精确应用身份撤销该应用连接，不影响同发行人其他 App 或其他来源
+    description: 按精确来源撤销该应用连接，不影响其他来源
   - name: connect.permissions.list
     params: ConnectPermissionsListRequest
     result: ConnectPermissionsView
@@ -285,32 +285,77 @@ methods:
     params: ConnectExecRequest
     result: JsonValue
     timeout: connect
-    description: 执行已审批原请求；App 上下文禁止进入钱包管理方法
+    description: 执行已审批原请求；可信来源由 Receiver 上下文提供，App 上下文禁止进入钱包管理方法
   - name: connect.launch.issue
     params: ConnectLaunchIssueRequest
     result: ConnectLaunchIssueResponse
     timeout: short
-    description: 钱包主动启动应用：签发一次性启动令牌；钱包管理上下文，需已初始化并解锁
+    description: 钱包主动启动应用：签发一次性启动令牌并绑定精确来源；钱包管理上下文，需已初始化并解锁
   - name: storage.put
     params: StoragePutRequest
     result: StoragePutResponse
     timeout: short
-    description: App 对象写入，二进制附件；条件创建走唯一约束
+    description: 按来源隔离的对象写入，二进制附件；条件创建走唯一约束
   - name: storage.get
     params: StorageGetRequest
     result: StorageGetResponse
     timeout: short
-    description: App 对象读取，支持范围
+    description: 按来源隔离的对象读取，支持范围
   - name: storage.list
     params: StorageListRequest
     result: StorageListResponse
     timeout: short
-    description: 目录/分页列举
+    description: 按来源隔离的目录/分页列举
   - name: storage.delete
     params: StorageDeleteRequest
     result: Ok
     timeout: short
-    description: App 对象删除
+    description: 按来源隔离的对象删除
+  - name: connect.directory.list
+    params: null
+    result: ConnectDirectoryView
+    timeout: short
+    description: 按 App 公钥合并的目录与独立 pending 项；仅读取动作触发市场缓存刷新
+  - name: connect.directory.add
+    params: ConnectDirectoryAddRequest
+    result: ConnectDirectoryView
+    timeout: long
+    description: 保存 pending 入口；seed 安装验证完成后才归并 App 公钥
+  - name: connect.directory.remove
+    params: ConnectDirectoryRemoveRequest
+    result: Ok
+    timeout: short
+    description: 删除本地自添加条目；收藏需先取消置顶
+  - name: connect.directory.favorite
+    params: ConnectDirectoryFavoriteRequest
+    result: Ok
+    timeout: short
+    description: 收藏只在本机保存并置顶，不上传市场
+  - name: connect.directory.select
+    params: ConnectDirectorySelectRequest
+    result: Ok
+    timeout: short
+    description: 保存本机明确选择的 URL 或 Files 入口，市场刷新不覆盖
+  - name: connect.deployment.install
+    params: ConnectDeploymentInstallRequest
+    result: ConnectDeploymentInstallResponse
+    timeout: long
+    description: Files 部署安装：按 indexseedhashhex 从独立文件源下载、验证全部文件后原子转为不可变部署目录；不启动服务不登记来源
+  - name: connect.deployment.start
+    params: ConnectDeploymentStartRequest
+    result: ConnectDeploymentStartResponse
+    timeout: short
+    description: 启动已验证部署：分配 loopback 端口并登记 deploymentId + 本地 origin + App 公钥 + indexseedhashhex + 运行代际
+  - name: connect.deployment.stop
+    params: ConnectDeploymentStopRequest
+    result: Ok
+    timeout: short
+    description: 停止部署：撤销部署绑定、令牌和连接；端口转给另一 App 后旧登记不可用
+  - name: connect.deployment.list
+    params: null
+    result: ConnectDeploymentView
+    timeout: short
+    description: 已验证部署登记列表
 errors:
   - code: BAD_REQUEST
     description: 请求非法（参数缺失/类型错误/未知主题/附件违规）
@@ -1174,7 +1219,28 @@ schemas:
       bindings:
         type: array
         items:
-          type: object
+          $ref: '#/components/schemas/ConnectAuthorization'
+  ConnectAuthorization:
+    type: object
+    required: [authorizationId, origin, network]
+    properties:
+      authorizationId:
+        type: string
+      origin:
+        type: string
+        description: 精确来源 origin；传输绑定不作持久身份主键
+      network:
+        type: string
+      walletPublicKey:
+        type: string
+      appPublicKeyHex:
+        type: string
+        description: 建连时验证的 App 身份快照；缺省表示未经验证的传输
+      generation:
+        type: string
+      createdAt:
+        type: integer
+        format: int64
   ConnectAuthView:
     type: object
     required: [authorizations]
@@ -1182,17 +1248,14 @@ schemas:
       authorizations:
         type: array
         items:
-          type: object
+          $ref: '#/components/schemas/ConnectAuthorization'
   ConnectAuthRevokeRequest:
     type: object
-    required: [origin, appPublicKey, appId]
+    required: [appPublicKeyHex]
     properties:
-      origin:
+      appPublicKeyHex:
         type: string
-      appPublicKey:
-        type: string
-      appId:
-        type: string
+        description: 撤销该公钥全部运行连接；保留持久许可与数据
   ConnectExecRequest:
     type: object
     properties:
@@ -1200,8 +1263,6 @@ schemas:
         type: string
       approvalId:
         type: string
-      proof:
-        type: object
       method:
         type: string
       params:
@@ -1216,43 +1277,34 @@ schemas:
     properties:
       origin:
         type: string
+      url:
+        type: string
+      expectedAppPublicKeyHex:
+        type: string
+      deploymentId:
+        type: string
   ConnectLaunchIssueResponse:
     type: object
-    required: [launchToken, expiresAt, appIdentity]
+    required: [launchToken, expiresAt]
     properties:
       launchToken:
         type: string
       expiresAt:
         type: integer
-      appIdentity:
-        $ref: '#/components/schemas/ConnectLaunchAppIdentity'
-  ConnectLaunchAppIdentity:
-    type: object
-    required: [publisherPublicKeyHex, appId, appName, identityDigestHex, requirements]
-    description: 钱包主动启动时解析并绑定的 App 身份快照；launch 消费时 proof 摘要必须与之完全一致，不接受替换或扩大权限
-    properties:
-      publisherPublicKeyHex:
-        type: string
-      appId:
-        type: string
-      appName:
-        type: string
-      identityDigestHex:
-        type: string
-      requirements:
-        type: array
-        items:
-          type: string
   StoragePutRequest:
     type: object
-    required: [network, walletPublicKey, appPublicKey, path]
+    required: [network, walletPublicKey, appPublicKeyHex, path]
     properties:
       network:
         type: string
       walletPublicKey:
         type: string
-      appPublicKey:
+      origin:
         type: string
+        description: 精确来源 origin；传输绑定
+      appPublicKeyHex:
+        type: string
+        description: 已验证 App 身份快照（可选回显）；命名空间以后台授权快照为准，不接受业务请求自选
       path:
         type: string
       mime:
@@ -1271,14 +1323,18 @@ schemas:
         format: int64
   StorageGetRequest:
     type: object
-    required: [network, walletPublicKey, appPublicKey, path]
+    required: [network, walletPublicKey, appPublicKeyHex, path]
     properties:
       network:
         type: string
       walletPublicKey:
         type: string
-      appPublicKey:
+      origin:
         type: string
+        description: 精确来源 origin；传输绑定
+      appPublicKeyHex:
+        type: string
+        description: 已验证 App 身份快照（可选回显）；命名空间以后台授权快照为准，不接受业务请求自选
       path:
         type: string
       offset:
@@ -1308,14 +1364,18 @@ schemas:
         type: boolean
   StorageListRequest:
     type: object
-    required: [network, walletPublicKey, appPublicKey, prefix]
+    required: [network, walletPublicKey, appPublicKeyHex, prefix]
     properties:
       network:
         type: string
       walletPublicKey:
         type: string
-      appPublicKey:
+      origin:
         type: string
+        description: 精确来源 origin；传输绑定
+      appPublicKeyHex:
+        type: string
+        description: 已验证 App 身份快照（可选回显）；命名空间以后台授权快照为准，不接受业务请求自选
       prefix:
         type: string
       cursor:
@@ -1334,13 +1394,289 @@ schemas:
         type: string
   StorageDeleteRequest:
     type: object
-    required: [network, walletPublicKey, appPublicKey, path]
+    required: [network, walletPublicKey, appPublicKeyHex, path]
     properties:
       network:
         type: string
       walletPublicKey:
         type: string
-      appPublicKey:
+      origin:
         type: string
+        description: 精确来源 origin；传输绑定
+      appPublicKeyHex:
+        type: string
+        description: 已验证 App 身份快照（可选回显）；命名空间以后台授权快照为准，不接受业务请求自选
       path:
         type: string
+  PublicationProof:
+    type: object
+    required: [publication, signatureHex]
+    properties:
+      publication:
+        $ref: '#/components/schemas/PublicationRecord'
+      signatureHex:
+        type: string
+  PublicationRecord:
+    type: object
+    required: [version, kind, appPublicKeyHex, name, description]
+    properties:
+      version:
+        type: integer
+      kind:
+        type: string
+        description: url | files | both；按渠道严格要求 url/files 字段
+      appPublicKeyHex:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+      url:
+        $ref: '#/components/schemas/PublicationUrlChannel'
+      files:
+        $ref: '#/components/schemas/PublicationFilesChannel'
+  PublicationUrlChannel:
+    type: object
+    required: [address, icon]
+    properties:
+      address:
+        type: string
+      icon:
+        type: string
+  PublicationFilesChannel:
+    type: object
+    required: [entrySeedhashhex, icon, files]
+    properties:
+      entrySeedhashhex:
+        type: string
+      icon:
+        type: string
+        description: 清单内图标文件的 MasterSeed seedhashhex
+      files:
+        type: array
+        items:
+          $ref: '#/components/schemas/PublicationFile'
+  PublicationFile:
+    type: object
+    required: [path, mime, size, seedhashhex]
+    properties:
+      path:
+        type: string
+      mime:
+        type: string
+      size:
+        type: integer
+      seedhashhex:
+        type: string
+  AppDisplay:
+    type: object
+    required: [name, description, icon]
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+      icon:
+        type: string
+  ConnectDirectoryUrlEntry:
+    type: object
+    required: [url, origin, display]
+    properties:
+      display:
+        $ref: '#/components/schemas/AppDisplay'
+      url:
+        type: string
+      origin:
+        type: string
+      verifiedAt:
+        type: integer
+  ConnectDirectoryFilesEntry:
+    type: object
+    required: [indexseedhashhex, display]
+    properties:
+      display:
+        $ref: '#/components/schemas/AppDisplay'
+      indexseedhashhex:
+        type: string
+      verifiedAt:
+        type: integer
+  ConnectDirectorySelection:
+    type: object
+    properties:
+      url:
+        type: string
+      indexseedhashhex:
+        type: string
+  ConnectDirectoryEntry:
+    type: object
+    required: [appPublicKeyHex, urls, files, favorite, marketListed, local]
+    properties:
+      appPublicKeyHex:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+      icon:
+        type: string
+      urls:
+        type: array
+        items:
+          $ref: '#/components/schemas/ConnectDirectoryUrlEntry'
+      files:
+        type: array
+        items:
+          $ref: '#/components/schemas/ConnectDirectoryFilesEntry'
+      favorite:
+        type: boolean
+      marketListed:
+        type: boolean
+      local:
+        type: boolean
+      selected:
+        $ref: '#/components/schemas/ConnectDirectorySelection'
+  ConnectDirectoryPendingEntry:
+    type: object
+    required: [pendingId]
+    properties:
+      pendingId:
+        type: string
+      url:
+        type: string
+      indexseedhashhex:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+      icon:
+        type: string
+      error:
+        type: string
+  ConnectDirectoryView:
+    type: object
+    required: [entries, pending]
+    properties:
+      entries:
+        type: array
+        items:
+          $ref: '#/components/schemas/ConnectDirectoryEntry'
+      pending:
+        type: array
+        items:
+          $ref: '#/components/schemas/ConnectDirectoryPendingEntry'
+      marketError:
+        type: string
+  ConnectDirectoryAddRequest:
+    type: object
+    description: url 与 indexseedhashhex 必须严格二选一，未验证输入只保存为 pending
+    properties:
+      url:
+        type: string
+      indexseedhashhex:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+      icon:
+        type: string
+  ConnectDirectoryRemoveRequest:
+    type: object
+    description: appPublicKeyHex 与 pendingId 严格二选一
+    properties:
+      appPublicKeyHex:
+        type: string
+      pendingId:
+        type: string
+  ConnectDirectoryFavoriteRequest:
+    type: object
+    required: [appPublicKeyHex, favorite]
+    properties:
+      appPublicKeyHex:
+        type: string
+      favorite:
+        type: boolean
+  ConnectDirectorySelectRequest:
+    type: object
+    required: [appPublicKeyHex]
+    description: url 与 indexseedhashhex 严格二选一，只能选择条目内已有入口
+    properties:
+      appPublicKeyHex:
+        type: string
+      url:
+        type: string
+      indexseedhashhex:
+        type: string
+  ConnectDeploymentInstallRequest:
+    type: object
+    required: [indexseedhashhex]
+    properties:
+      indexseedhashhex:
+        type: string
+        description: Files 发布的内容入口；从独立可用文件源下载验证
+  ConnectDeploymentInstallResponse:
+    type: object
+    required: [deploymentId, appPublicKeyHex, indexseedhashhex]
+    properties:
+      deploymentId:
+        type: string
+      appPublicKeyHex:
+        type: string
+      indexseedhashhex:
+        type: string
+  ConnectDeploymentStartRequest:
+    type: object
+    required: [deploymentId]
+    properties:
+      deploymentId:
+        type: string
+  ConnectDeploymentStartResponse:
+    type: object
+    required: [deploymentId, origin, url, appPublicKeyHex, indexseedhashhex]
+    properties:
+      iconUrl:
+        type: string
+        description: 仅运行时从已验证清单按图标 seed 映射的本地 URL
+      deploymentId:
+        type: string
+      url:
+        type: string
+      origin:
+        type: string
+        description: 分配的 loopback 本地来源；端口复用时旧绑定失效
+      appPublicKeyHex:
+        type: string
+      indexseedhashhex:
+        type: string
+  ConnectDeploymentStopRequest:
+    type: object
+    required: [deploymentId]
+    properties:
+      deploymentId:
+        type: string
+  ConnectDeployment:
+    type: object
+    required: [deploymentId, appPublicKeyHex, indexseedhashhex, status]
+    properties:
+      iconUrl:
+        type: string
+      deploymentId:
+        type: string
+      appPublicKeyHex:
+        type: string
+      origin:
+        type: string
+      indexseedhashhex:
+        type: string
+      status:
+        type: string
+        description: installed | serving | stopped
+  ConnectDeploymentView:
+    type: object
+    required: [deployments]
+    properties:
+      deployments:
+        type: array
+        items:
+          $ref: '#/components/schemas/ConnectDeployment'

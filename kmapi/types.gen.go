@@ -13,6 +13,12 @@ type AddRootResponse struct {
 	Revision int64  `json:"revision"`
 }
 
+type AppDisplay struct {
+	Description string `json:"description"`
+	Icon        string `json:"icon"`
+	Name        string `json:"name"`
+}
+
 type ArbitrationService struct {
 	Address      *string `json:"address,omitempty"`
 	Name         *string `json:"name,omitempty"`
@@ -137,21 +143,140 @@ type ConnectAppsView struct {
 }
 
 type ConnectAuthRevokeRequest struct {
-	AppID        string `json:"appId"`
-	AppPublicKey string `json:"appPublicKey"`
-	Origin       string `json:"origin"`
+	AppPublicKeyHex string `json:"appPublicKeyHex"`
 }
 
 type ConnectAuthView struct {
-	Authorizations []map[string]any `json:"authorizations"`
+	Authorizations []ConnectAuthorization `json:"authorizations"`
+}
+
+type ConnectAuthorization struct {
+	AppPublicKeyHex *string `json:"appPublicKeyHex,omitempty"`
+	AuthorizationID string  `json:"authorizationId"`
+	CreatedAt       *int64  `json:"createdAt,omitempty"`
+	Generation      *string `json:"generation,omitempty"`
+	Network         string  `json:"network"`
+	Origin          string  `json:"origin"`
+	WalletPublicKey *string `json:"walletPublicKey,omitempty"`
 }
 
 type ConnectBindingsView struct {
-	Bindings []map[string]any `json:"bindings"`
+	Bindings []ConnectAuthorization `json:"bindings"`
 }
 
 type ConnectConnectionPauseRequest struct {
 	AuthorizationID string `json:"authorizationId"`
+}
+
+type ConnectDeployment struct {
+	AppPublicKeyHex  string  `json:"appPublicKeyHex"`
+	DeploymentID     string  `json:"deploymentId"`
+	IconURL          *string `json:"iconUrl,omitempty"`
+	Indexseedhashhex string  `json:"indexseedhashhex"`
+	Origin           *string `json:"origin,omitempty"`
+	Status           string  `json:"status"`
+}
+
+type ConnectDeploymentInstallRequest struct {
+	Indexseedhashhex string `json:"indexseedhashhex"`
+}
+
+type ConnectDeploymentInstallResponse struct {
+	AppPublicKeyHex  string `json:"appPublicKeyHex"`
+	DeploymentID     string `json:"deploymentId"`
+	Indexseedhashhex string `json:"indexseedhashhex"`
+}
+
+type ConnectDeploymentStartRequest struct {
+	DeploymentID string `json:"deploymentId"`
+}
+
+type ConnectDeploymentStartResponse struct {
+	AppPublicKeyHex  string  `json:"appPublicKeyHex"`
+	DeploymentID     string  `json:"deploymentId"`
+	IconURL          *string `json:"iconUrl,omitempty"`
+	Indexseedhashhex string  `json:"indexseedhashhex"`
+	Origin           string  `json:"origin"`
+	URL              string  `json:"url"`
+}
+
+type ConnectDeploymentStopRequest struct {
+	DeploymentID string `json:"deploymentId"`
+}
+
+type ConnectDeploymentView struct {
+	Deployments []ConnectDeployment `json:"deployments"`
+}
+
+type ConnectDirectoryAddRequest struct {
+	Description      *string `json:"description,omitempty"`
+	Icon             *string `json:"icon,omitempty"`
+	Indexseedhashhex *string `json:"indexseedhashhex,omitempty"`
+	Name             *string `json:"name,omitempty"`
+	URL              *string `json:"url,omitempty"`
+}
+
+type ConnectDirectoryEntry struct {
+	AppPublicKeyHex string                       `json:"appPublicKeyHex"`
+	Description     *string                      `json:"description,omitempty"`
+	Favorite        bool                         `json:"favorite"`
+	Files           []ConnectDirectoryFilesEntry `json:"files"`
+	Icon            *string                      `json:"icon,omitempty"`
+	Local           bool                         `json:"local"`
+	MarketListed    bool                         `json:"marketListed"`
+	Name            *string                      `json:"name,omitempty"`
+	Selected        *ConnectDirectorySelection   `json:"selected,omitempty"`
+	URLs            []ConnectDirectoryURLEntry   `json:"urls"`
+}
+
+type ConnectDirectoryFavoriteRequest struct {
+	AppPublicKeyHex string `json:"appPublicKeyHex"`
+	Favorite        bool   `json:"favorite"`
+}
+
+type ConnectDirectoryFilesEntry struct {
+	Display          AppDisplay `json:"display"`
+	Indexseedhashhex string     `json:"indexseedhashhex"`
+	VerifiedAt       *int       `json:"verifiedAt,omitempty"`
+}
+
+type ConnectDirectoryPendingEntry struct {
+	Description      *string `json:"description,omitempty"`
+	Error            *string `json:"error,omitempty"`
+	Icon             *string `json:"icon,omitempty"`
+	Indexseedhashhex *string `json:"indexseedhashhex,omitempty"`
+	Name             *string `json:"name,omitempty"`
+	PendingID        string  `json:"pendingId"`
+	URL              *string `json:"url,omitempty"`
+}
+
+type ConnectDirectoryRemoveRequest struct {
+	AppPublicKeyHex *string `json:"appPublicKeyHex,omitempty"`
+	PendingID       *string `json:"pendingId,omitempty"`
+}
+
+type ConnectDirectorySelectRequest struct {
+	AppPublicKeyHex  string  `json:"appPublicKeyHex"`
+	Indexseedhashhex *string `json:"indexseedhashhex,omitempty"`
+	URL              *string `json:"url,omitempty"`
+}
+
+type ConnectDirectorySelection struct {
+	Indexseedhashhex *string `json:"indexseedhashhex,omitempty"`
+	URL              *string `json:"url,omitempty"`
+}
+
+type ConnectDirectoryURLEntry struct {
+	Display    AppDisplay `json:"display"`
+	Origin     string     `json:"origin"`
+	URL        string     `json:"url"`
+	VerifiedAt *int       `json:"verifiedAt,omitempty"`
+}
+
+type ConnectDirectoryView struct {
+	Entries     []ConnectDirectoryEntry        `json:"entries"`
+	MarketError *string                        `json:"marketError,omitempty"`
+	Pending     []ConnectDirectoryPendingEntry `json:"pending"`
 }
 
 type ConnectExecRequest struct {
@@ -160,7 +285,6 @@ type ConnectExecRequest struct {
 	Method          *string        `json:"method,omitempty"`
 	Origin          *string        `json:"origin,omitempty"`
 	Params          map[string]any `json:"params,omitempty"`
-	Proof           map[string]any `json:"proof,omitempty"`
 	RequestID       *string        `json:"requestId,omitempty"`
 }
 
@@ -173,22 +297,16 @@ type ConnectHistoryView struct {
 	Events []map[string]any `json:"events"`
 }
 
-type ConnectLaunchAppIdentity struct {
-	AppID                 string   `json:"appId"`
-	AppName               string   `json:"appName"`
-	IdentityDigestHex     string   `json:"identityDigestHex"`
-	PublisherPublicKeyHex string   `json:"publisherPublicKeyHex"`
-	Requirements          []string `json:"requirements"`
-}
-
 type ConnectLaunchIssueRequest struct {
-	Origin string `json:"origin"`
+	DeploymentID            *string `json:"deploymentId,omitempty"`
+	ExpectedAppPublicKeyHex *string `json:"expectedAppPublicKeyHex,omitempty"`
+	Origin                  string  `json:"origin"`
+	URL                     *string `json:"url,omitempty"`
 }
 
 type ConnectLaunchIssueResponse struct {
-	AppIdentity ConnectLaunchAppIdentity `json:"appIdentity"`
-	ExpiresAt   int                      `json:"expiresAt"`
-	LaunchToken string                   `json:"launchToken"`
+	ExpiresAt   int    `json:"expiresAt"`
+	LaunchToken string `json:"launchToken"`
 }
 
 type ConnectPermissionsListRequest struct {
@@ -302,6 +420,39 @@ type PricingFileRequest struct {
 
 type PricingFileResponse struct {
 	Updated string `json:"updated"`
+}
+
+type PublicationFile struct {
+	Mime        string `json:"mime"`
+	Path        string `json:"path"`
+	Seedhashhex string `json:"seedhashhex"`
+	Size        int    `json:"size"`
+}
+
+type PublicationFilesChannel struct {
+	EntrySeedhashhex string            `json:"entrySeedhashhex"`
+	Files            []PublicationFile `json:"files"`
+	Icon             string            `json:"icon"`
+}
+
+type PublicationProof struct {
+	Publication  PublicationRecord `json:"publication"`
+	SignatureHex string            `json:"signatureHex"`
+}
+
+type PublicationRecord struct {
+	AppPublicKeyHex string                   `json:"appPublicKeyHex"`
+	Description     string                   `json:"description"`
+	Files           *PublicationFilesChannel `json:"files,omitempty"`
+	Kind            string                   `json:"kind"`
+	Name            string                   `json:"name"`
+	URL             *PublicationURLChannel   `json:"url,omitempty"`
+	Version         int                      `json:"version"`
+}
+
+type PublicationURLChannel struct {
+	Address string `json:"address"`
+	Icon    string `json:"icon"`
 }
 
 type RevisionRequest struct {
@@ -420,18 +571,20 @@ type Status struct {
 }
 
 type StorageDeleteRequest struct {
-	AppPublicKey    string `json:"appPublicKey"`
-	Network         string `json:"network"`
-	Path            string `json:"path"`
-	WalletPublicKey string `json:"walletPublicKey"`
+	AppPublicKeyHex string  `json:"appPublicKeyHex"`
+	Network         string  `json:"network"`
+	Origin          *string `json:"origin,omitempty"`
+	Path            string  `json:"path"`
+	WalletPublicKey string  `json:"walletPublicKey"`
 }
 
 type StorageGetRequest struct {
-	AppPublicKey    string  `json:"appPublicKey"`
+	AppPublicKeyHex string  `json:"appPublicKeyHex"`
 	IfMatch         *string `json:"ifMatch,omitempty"`
 	Length          *int64  `json:"length,omitempty"`
 	Network         string  `json:"network"`
 	Offset          *int64  `json:"offset,omitempty"`
+	Origin          *string `json:"origin,omitempty"`
 	Path            string  `json:"path"`
 	WalletPublicKey string  `json:"walletPublicKey"`
 }
@@ -445,10 +598,11 @@ type StorageGetResponse struct {
 }
 
 type StorageListRequest struct {
-	AppPublicKey    string  `json:"appPublicKey"`
+	AppPublicKeyHex string  `json:"appPublicKeyHex"`
 	Cursor          *string `json:"cursor,omitempty"`
 	Limit           *int    `json:"limit,omitempty"`
 	Network         string  `json:"network"`
+	Origin          *string `json:"origin,omitempty"`
 	Prefix          string  `json:"prefix"`
 	WalletPublicKey string  `json:"walletPublicKey"`
 }
@@ -459,10 +613,11 @@ type StorageListResponse struct {
 }
 
 type StoragePutRequest struct {
-	AppPublicKey    string  `json:"appPublicKey"`
+	AppPublicKeyHex string  `json:"appPublicKeyHex"`
 	IfNoneMatch     *string `json:"ifNoneMatch,omitempty"`
 	Mime            *string `json:"mime,omitempty"`
 	Network         string  `json:"network"`
+	Origin          *string `json:"origin,omitempty"`
 	Path            string  `json:"path"`
 	WalletPublicKey string  `json:"walletPublicKey"`
 }

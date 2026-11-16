@@ -19,6 +19,15 @@ export const MethodConnectAuthList = "connect.auth.list"; // params=null result=
 export const MethodConnectAuthRevoke = "connect.auth.revoke"; // params=ConnectAuthRevokeRequest result=Ok timeout=short
 export const MethodConnectBindingsList = "connect.bindings.list"; // params=null result=ConnectBindingsView timeout=short
 export const MethodConnectConnectionPause = "connect.connection.pause"; // params=ConnectConnectionPauseRequest result=Ok timeout=short
+export const MethodConnectDeploymentInstall = "connect.deployment.install"; // params=ConnectDeploymentInstallRequest result=ConnectDeploymentInstallResponse timeout=long
+export const MethodConnectDeploymentList = "connect.deployment.list"; // params=null result=ConnectDeploymentView timeout=short
+export const MethodConnectDeploymentStart = "connect.deployment.start"; // params=ConnectDeploymentStartRequest result=ConnectDeploymentStartResponse timeout=short
+export const MethodConnectDeploymentStop = "connect.deployment.stop"; // params=ConnectDeploymentStopRequest result=Ok timeout=short
+export const MethodConnectDirectoryAdd = "connect.directory.add"; // params=ConnectDirectoryAddRequest result=ConnectDirectoryView timeout=long
+export const MethodConnectDirectoryFavorite = "connect.directory.favorite"; // params=ConnectDirectoryFavoriteRequest result=Ok timeout=short
+export const MethodConnectDirectoryList = "connect.directory.list"; // params=null result=ConnectDirectoryView timeout=short
+export const MethodConnectDirectoryRemove = "connect.directory.remove"; // params=ConnectDirectoryRemoveRequest result=Ok timeout=short
+export const MethodConnectDirectorySelect = "connect.directory.select"; // params=ConnectDirectorySelectRequest result=Ok timeout=short
 export const MethodConnectHistoryList = "connect.history.list"; // params=ConnectHistoryListRequest result=ConnectHistoryView timeout=short
 export const MethodConnectLaunchIssue = "connect.launch.issue"; // params=ConnectLaunchIssueRequest result=ConnectLaunchIssueResponse timeout=short
 export const MethodConnectPermissionsList = "connect.permissions.list"; // params=ConnectPermissionsListRequest result=ConnectPermissionsView timeout=short
@@ -68,6 +77,15 @@ export const MethodTimeout: Record<string, string> = {
   "connect.auth.revoke": "short",
   "connect.bindings.list": "short",
   "connect.connection.pause": "short",
+  "connect.deployment.install": "long",
+  "connect.deployment.list": "short",
+  "connect.deployment.start": "short",
+  "connect.deployment.stop": "short",
+  "connect.directory.add": "long",
+  "connect.directory.favorite": "short",
+  "connect.directory.list": "short",
+  "connect.directory.remove": "short",
+  "connect.directory.select": "short",
   "connect.history.list": "short",
   "connect.launch.issue": "short",
   "connect.permissions.list": "short",
@@ -118,6 +136,15 @@ export const MethodParams: Record<string, string> = {
   "connect.auth.revoke": "ConnectAuthRevokeRequest",
   "connect.bindings.list": "null",
   "connect.connection.pause": "ConnectConnectionPauseRequest",
+  "connect.deployment.install": "ConnectDeploymentInstallRequest",
+  "connect.deployment.list": "null",
+  "connect.deployment.start": "ConnectDeploymentStartRequest",
+  "connect.deployment.stop": "ConnectDeploymentStopRequest",
+  "connect.directory.add": "ConnectDirectoryAddRequest",
+  "connect.directory.favorite": "ConnectDirectoryFavoriteRequest",
+  "connect.directory.list": "null",
+  "connect.directory.remove": "ConnectDirectoryRemoveRequest",
+  "connect.directory.select": "ConnectDirectorySelectRequest",
   "connect.history.list": "ConnectHistoryListRequest",
   "connect.launch.issue": "ConnectLaunchIssueRequest",
   "connect.permissions.list": "ConnectPermissionsListRequest",
@@ -168,6 +195,15 @@ export const MethodResult: Record<string, string> = {
   "connect.auth.revoke": "Ok",
   "connect.bindings.list": "ConnectBindingsView",
   "connect.connection.pause": "Ok",
+  "connect.deployment.install": "ConnectDeploymentInstallResponse",
+  "connect.deployment.list": "ConnectDeploymentView",
+  "connect.deployment.start": "ConnectDeploymentStartResponse",
+  "connect.deployment.stop": "Ok",
+  "connect.directory.add": "ConnectDirectoryView",
+  "connect.directory.favorite": "Ok",
+  "connect.directory.list": "ConnectDirectoryView",
+  "connect.directory.remove": "Ok",
+  "connect.directory.select": "Ok",
   "connect.history.list": "ConnectHistoryView",
   "connect.launch.issue": "ConnectLaunchIssueResponse",
   "connect.permissions.list": "ConnectPermissionsView",

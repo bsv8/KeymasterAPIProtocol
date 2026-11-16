@@ -12,6 +12,12 @@ export interface AddRootResponse {
   revision: number;
 }
 
+export interface AppDisplay {
+  description: string;
+  icon: string;
+  name: string;
+}
+
 export interface ArbitrationService {
   address?: string;
   name?: string;
@@ -136,21 +142,140 @@ export interface ConnectAppsView {
 }
 
 export interface ConnectAuthRevokeRequest {
-  appId: string;
-  appPublicKey: string;
-  origin: string;
+  appPublicKeyHex: string;
 }
 
 export interface ConnectAuthView {
-  authorizations: Record<string, unknown>[];
+  authorizations: ConnectAuthorization[];
+}
+
+export interface ConnectAuthorization {
+  appPublicKeyHex?: string;
+  authorizationId: string;
+  createdAt?: number;
+  generation?: string;
+  network: string;
+  origin: string;
+  walletPublicKey?: string;
 }
 
 export interface ConnectBindingsView {
-  bindings: Record<string, unknown>[];
+  bindings: ConnectAuthorization[];
 }
 
 export interface ConnectConnectionPauseRequest {
   authorizationId: string;
+}
+
+export interface ConnectDeployment {
+  appPublicKeyHex: string;
+  deploymentId: string;
+  iconUrl?: string;
+  indexseedhashhex: string;
+  origin?: string;
+  status: string;
+}
+
+export interface ConnectDeploymentInstallRequest {
+  indexseedhashhex: string;
+}
+
+export interface ConnectDeploymentInstallResponse {
+  appPublicKeyHex: string;
+  deploymentId: string;
+  indexseedhashhex: string;
+}
+
+export interface ConnectDeploymentStartRequest {
+  deploymentId: string;
+}
+
+export interface ConnectDeploymentStartResponse {
+  appPublicKeyHex: string;
+  deploymentId: string;
+  iconUrl?: string;
+  indexseedhashhex: string;
+  origin: string;
+  url: string;
+}
+
+export interface ConnectDeploymentStopRequest {
+  deploymentId: string;
+}
+
+export interface ConnectDeploymentView {
+  deployments: ConnectDeployment[];
+}
+
+export interface ConnectDirectoryAddRequest {
+  description?: string;
+  icon?: string;
+  indexseedhashhex?: string;
+  name?: string;
+  url?: string;
+}
+
+export interface ConnectDirectoryEntry {
+  appPublicKeyHex: string;
+  description?: string;
+  favorite: boolean;
+  files: ConnectDirectoryFilesEntry[];
+  icon?: string;
+  local: boolean;
+  marketListed: boolean;
+  name?: string;
+  selected?: ConnectDirectorySelection;
+  urls: ConnectDirectoryURLEntry[];
+}
+
+export interface ConnectDirectoryFavoriteRequest {
+  appPublicKeyHex: string;
+  favorite: boolean;
+}
+
+export interface ConnectDirectoryFilesEntry {
+  display: AppDisplay;
+  indexseedhashhex: string;
+  verifiedAt?: number;
+}
+
+export interface ConnectDirectoryPendingEntry {
+  description?: string;
+  error?: string;
+  icon?: string;
+  indexseedhashhex?: string;
+  name?: string;
+  pendingId: string;
+  url?: string;
+}
+
+export interface ConnectDirectoryRemoveRequest {
+  appPublicKeyHex?: string;
+  pendingId?: string;
+}
+
+export interface ConnectDirectorySelectRequest {
+  appPublicKeyHex: string;
+  indexseedhashhex?: string;
+  url?: string;
+}
+
+export interface ConnectDirectorySelection {
+  indexseedhashhex?: string;
+  url?: string;
+}
+
+export interface ConnectDirectoryURLEntry {
+  display: AppDisplay;
+  origin: string;
+  url: string;
+  verifiedAt?: number;
+}
+
+export interface ConnectDirectoryView {
+  entries: ConnectDirectoryEntry[];
+  marketError?: string;
+  pending: ConnectDirectoryPendingEntry[];
 }
 
 export interface ConnectExecRequest {
@@ -159,7 +284,6 @@ export interface ConnectExecRequest {
   method?: string;
   origin?: string;
   params?: Record<string, unknown>;
-  proof?: Record<string, unknown>;
   requestId?: string;
 }
 
@@ -172,20 +296,14 @@ export interface ConnectHistoryView {
   events: Record<string, unknown>[];
 }
 
-export interface ConnectLaunchAppIdentity {
-  appId: string;
-  appName: string;
-  identityDigestHex: string;
-  publisherPublicKeyHex: string;
-  requirements: string[];
-}
-
 export interface ConnectLaunchIssueRequest {
+  deploymentId?: string;
+  expectedAppPublicKeyHex?: string;
   origin: string;
+  url?: string;
 }
 
 export interface ConnectLaunchIssueResponse {
-  appIdentity: ConnectLaunchAppIdentity;
   expiresAt: number;
   launchToken: string;
 }
@@ -301,6 +419,39 @@ export interface PricingFileRequest {
 
 export interface PricingFileResponse {
   updated: string;
+}
+
+export interface PublicationFile {
+  mime: string;
+  path: string;
+  seedhashhex: string;
+  size: number;
+}
+
+export interface PublicationFilesChannel {
+  entrySeedhashhex: string;
+  files: PublicationFile[];
+  icon: string;
+}
+
+export interface PublicationProof {
+  publication: PublicationRecord;
+  signatureHex: string;
+}
+
+export interface PublicationRecord {
+  appPublicKeyHex: string;
+  description: string;
+  files?: PublicationFilesChannel;
+  kind: string;
+  name: string;
+  url?: PublicationURLChannel;
+  version: number;
+}
+
+export interface PublicationURLChannel {
+  address: string;
+  icon: string;
 }
 
 export interface RevisionRequest {
@@ -419,18 +570,20 @@ export interface Status {
 }
 
 export interface StorageDeleteRequest {
-  appPublicKey: string;
+  appPublicKeyHex: string;
   network: string;
+  origin?: string;
   path: string;
   walletPublicKey: string;
 }
 
 export interface StorageGetRequest {
-  appPublicKey: string;
+  appPublicKeyHex: string;
   ifMatch?: string;
   length?: number;
   network: string;
   offset?: number;
+  origin?: string;
   path: string;
   walletPublicKey: string;
 }
@@ -444,10 +597,11 @@ export interface StorageGetResponse {
 }
 
 export interface StorageListRequest {
-  appPublicKey: string;
+  appPublicKeyHex: string;
   cursor?: string;
   limit?: number;
   network: string;
+  origin?: string;
   prefix: string;
   walletPublicKey: string;
 }
@@ -458,10 +612,11 @@ export interface StorageListResponse {
 }
 
 export interface StoragePutRequest {
-  appPublicKey: string;
+  appPublicKeyHex: string;
   ifNoneMatch?: string;
   mime?: string;
   network: string;
+  origin?: string;
   path: string;
   walletPublicKey: string;
 }

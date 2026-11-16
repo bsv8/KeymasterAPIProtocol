@@ -682,7 +682,7 @@ schemas:
         $ref: '#/components/schemas/CollectorSettings'
   Settings:
     type: object
-    required: [version, revision, port, theme, language, wocApiKey, feeRateSatoshisPerKb, scheduler, services, server]
+    required: [version, revision, port, theme, applicationOpenMode, language, wocApiKey, feeRateSatoshisPerKb, scheduler, services, server]
     properties:
       version:
         type: integer
@@ -693,6 +693,9 @@ schemas:
         type: integer
       theme:
         type: string
+      applicationOpenMode:
+        type: string
+        enum: [iframe, popup]
       language:
         type: string
       wocApiKey:
@@ -761,6 +764,9 @@ schemas:
         type: integer
       theme:
         type: string
+      applicationOpenMode:
+        type: string
+        enum: [iframe, popup]
       language:
         type: string
       wocApiKey:

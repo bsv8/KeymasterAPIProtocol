@@ -527,6 +527,7 @@ export interface SetDefaultRootRequest {
 }
 
 export interface Settings {
+  applicationOpenMode: string;
   feeRateSatoshisPerKb: number;
   language: string;
   port: number;
@@ -540,6 +541,7 @@ export interface Settings {
 }
 
 export interface SettingsUpdate {
+  applicationOpenMode?: string;
   feeRateSatoshisPerKb?: number;
   language?: string;
   port?: number;

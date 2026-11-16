@@ -528,6 +528,7 @@ type SetDefaultRootRequest struct {
 }
 
 type Settings struct {
+	ApplicationOpenMode  string            `json:"applicationOpenMode"`
 	FeeRateSatoshisPerKb int64             `json:"feeRateSatoshisPerKb"`
 	Language             string            `json:"language"`
 	Port                 int               `json:"port"`
@@ -541,6 +542,7 @@ type Settings struct {
 }
 
 type SettingsUpdate struct {
+	ApplicationOpenMode  *string          `json:"applicationOpenMode,omitempty"`
 	FeeRateSatoshisPerKb *int64           `json:"feeRateSatoshisPerKb,omitempty"`
 	Language             *string          `json:"language,omitempty"`
 	Port                 *int             `json:"port,omitempty"`

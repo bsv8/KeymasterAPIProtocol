@@ -274,6 +274,8 @@ export interface ConnectDirectoryURLEntry {
 
 export interface ConnectDirectoryView {
   entries: ConnectDirectoryEntry[];
+  favorites?: Record<string, unknown>;
+  knownApplications?: Record<string, unknown>;
   marketError?: string;
   pending: ConnectDirectoryPendingEntry[];
 }
@@ -375,6 +377,26 @@ export interface JsonValue {
 
 export interface Ok {
   ok: boolean;
+}
+
+export interface PluginCatalogEntry {
+  methods: string[];
+  pluginId: string;
+  unitId: string;
+}
+
+export interface PluginUnitView {
+  instanceId: string;
+  pluginId: string;
+  unitId: string;
+}
+
+export interface PluginsInspectView {
+  active: boolean;
+  catalog: PluginCatalogEntry[];
+  instanceId: string;
+  runtimeInstanceId: string;
+  units: PluginUnitView[];
 }
 
 export interface PricingBatchRequest {

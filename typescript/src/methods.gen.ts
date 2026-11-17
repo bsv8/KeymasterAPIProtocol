@@ -37,6 +37,7 @@ export const MethodEventsSubscribe = "events.subscribe"; // params=EventsSubscri
 export const MethodFilesBrowse = "files.browse"; // params=BrowseRequest result=BrowseView timeout=short
 export const MethodFilesList = "files.list"; // params=null result=FilesView timeout=short
 export const MethodInfoGet = "info.get"; // params=null result=Info timeout=short
+export const MethodPluginsInspect = "plugins.inspect"; // params=null result=PluginsInspectView timeout=short
 export const MethodPricingBatch = "pricing.batch"; // params=PricingBatchRequest result=PricingBatchResponse timeout=short
 export const MethodPricingClearFile = "pricing.clearFile"; // params=PricingClearRequest result=PricingClearResponse timeout=short
 export const MethodPricingSetDefaults = "pricing.setDefaults"; // params=PricingDefaultsRequest result=PricingDefaultsResponse timeout=short
@@ -95,6 +96,7 @@ export const MethodTimeout: Record<string, string> = {
   "files.browse": "short",
   "files.list": "short",
   "info.get": "short",
+  "plugins.inspect": "short",
   "pricing.batch": "short",
   "pricing.clearFile": "short",
   "pricing.setDefaults": "short",
@@ -154,6 +156,7 @@ export const MethodParams: Record<string, string> = {
   "files.browse": "BrowseRequest",
   "files.list": "null",
   "info.get": "null",
+  "plugins.inspect": "null",
   "pricing.batch": "PricingBatchRequest",
   "pricing.clearFile": "PricingClearRequest",
   "pricing.setDefaults": "PricingDefaultsRequest",
@@ -213,6 +216,7 @@ export const MethodResult: Record<string, string> = {
   "files.browse": "BrowseView",
   "files.list": "FilesView",
   "info.get": "Info",
+  "plugins.inspect": "PluginsInspectView",
   "pricing.batch": "PricingBatchResponse",
   "pricing.clearFile": "PricingClearResponse",
   "pricing.setDefaults": "PricingDefaultsResponse",

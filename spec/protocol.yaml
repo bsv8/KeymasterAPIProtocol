@@ -151,6 +151,11 @@ methods:
     result: Settings
     timeout: short
     description: 恢复普通参数；不删 App 数据
+  - name: plugins.inspect
+    params: null
+    result: PluginsInspectView
+    timeout: short
+    description: 后台插件装配只读诊断；钱包管理上下文可调用，App 上下文拒绝；初始化前、锁定可读；不读私钥、不触发解锁、不改持久化
   - name: collector.status
     params: null
     result: CollectorStatus
@@ -255,7 +260,7 @@ methods:
     params: ConnectAuthRevokeRequest
     result: Ok
     timeout: short
-    description: 按精确来源撤销该应用连接，不影响其他来源
+    description: 按已验证 App 公钥断开该应用全部运行连接，保留长期许可与历史
   - name: connect.permissions.list
     params: ConnectPermissionsListRequest
     result: ConnectPermissionsView
@@ -1573,6 +1578,12 @@ schemas:
           $ref: '#/components/schemas/ConnectDirectoryPendingEntry'
       marketError:
         type: string
+      knownApplications:
+        type: object
+        description: 已验证 App 公钥到 AppDisplay 的映射；仅展示资料，不授予可启动入口或权限
+      favorites:
+        type: object
+        description: App 公钥到 true 的收藏映射，包含没有可启动入口的历史 App
   ConnectDirectoryAddRequest:
     type: object
     description: url 与 indexseedhashhex 必须严格二选一，未验证输入只保存为 pending
@@ -1686,3 +1697,46 @@ schemas:
         type: array
         items:
           $ref: '#/components/schemas/ConnectDeployment'
+  PluginUnitView:
+    type: object
+    required: [pluginId, unitId, instanceId]
+    properties:
+      pluginId:
+        type: string
+      unitId:
+        type: string
+      instanceId:
+        type: string
+  PluginCatalogEntry:
+    type: object
+    required: [pluginId, unitId, methods]
+    properties:
+      pluginId:
+        type: string
+      unitId:
+        type: string
+      methods:
+        type: array
+        items:
+          type: string
+  PluginsInspectView:
+    type: object
+    required: [instanceId, runtimeInstanceId, active, units, catalog]
+    properties:
+      instanceId:
+        type: string
+        description: 后台实例标识（APIProtocol 连接 instanceId，重启重新生成）
+      runtimeInstanceId:
+        type: string
+        description: Go WebLoom Runtime 实例标识，与后台实例标识不同
+      active:
+        type: boolean
+        description: Runtime 是否仍接受调用；false 不解释为已完成排空
+      units:
+        type: array
+        items:
+          $ref: '#/components/schemas/PluginUnitView'
+      catalog:
+        type: array
+        items:
+          $ref: '#/components/schemas/PluginCatalogEntry'

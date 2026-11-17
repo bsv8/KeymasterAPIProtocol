@@ -274,9 +274,11 @@ type ConnectDirectoryURLEntry struct {
 }
 
 type ConnectDirectoryView struct {
-	Entries     []ConnectDirectoryEntry        `json:"entries"`
-	MarketError *string                        `json:"marketError,omitempty"`
-	Pending     []ConnectDirectoryPendingEntry `json:"pending"`
+	Entries           []ConnectDirectoryEntry        `json:"entries"`
+	Favorites         map[string]any                 `json:"favorites,omitempty"`
+	KnownApplications map[string]any                 `json:"knownApplications,omitempty"`
+	MarketError       *string                        `json:"marketError,omitempty"`
+	Pending           []ConnectDirectoryPendingEntry `json:"pending"`
 }
 
 type ConnectExecRequest struct {
@@ -376,6 +378,26 @@ type JsonValue struct {
 
 type Ok struct {
 	Ok bool `json:"ok"`
+}
+
+type PluginCatalogEntry struct {
+	Methods  []string `json:"methods"`
+	PluginID string   `json:"pluginId"`
+	UnitID   string   `json:"unitId"`
+}
+
+type PluginUnitView struct {
+	InstanceID string `json:"instanceId"`
+	PluginID   string `json:"pluginId"`
+	UnitID     string `json:"unitId"`
+}
+
+type PluginsInspectView struct {
+	Active            bool                 `json:"active"`
+	Catalog           []PluginCatalogEntry `json:"catalog"`
+	InstanceID        string               `json:"instanceId"`
+	RuntimeInstanceID string               `json:"runtimeInstanceId"`
+	Units             []PluginUnitView     `json:"units"`
 }
 
 type PricingBatchRequest struct {

@@ -39,6 +39,7 @@ const (
 	MethodFilesBrowse              = "files.browse"               // params=BrowseRequest result=BrowseView timeout=short
 	MethodFilesList                = "files.list"                 // params=nil result=FilesView timeout=short
 	MethodInfoGet                  = "info.get"                   // params=nil result=Info timeout=short
+	MethodPluginsInspect           = "plugins.inspect"            // params=nil result=PluginsInspectView timeout=short
 	MethodPricingBatch             = "pricing.batch"              // params=PricingBatchRequest result=PricingBatchResponse timeout=short
 	MethodPricingClearFile         = "pricing.clearFile"          // params=PricingClearRequest result=PricingClearResponse timeout=short
 	MethodPricingSetDefaults       = "pricing.setDefaults"        // params=PricingDefaultsRequest result=PricingDefaultsResponse timeout=short
@@ -99,6 +100,7 @@ var MethodTimeout = map[string]string{
 	"files.browse":               "short",
 	"files.list":                 "short",
 	"info.get":                   "short",
+	"plugins.inspect":            "short",
 	"pricing.batch":              "short",
 	"pricing.clearFile":          "short",
 	"pricing.setDefaults":        "short",
@@ -159,6 +161,7 @@ var MethodParams = map[string]string{
 	"files.browse":               "BrowseRequest",
 	"files.list":                 "null",
 	"info.get":                   "null",
+	"plugins.inspect":            "null",
 	"pricing.batch":              "PricingBatchRequest",
 	"pricing.clearFile":          "PricingClearRequest",
 	"pricing.setDefaults":        "PricingDefaultsRequest",
@@ -219,6 +222,7 @@ var MethodResult = map[string]string{
 	"files.browse":               "BrowseView",
 	"files.list":                 "FilesView",
 	"info.get":                   "Info",
+	"plugins.inspect":            "PluginsInspectView",
 	"pricing.batch":              "PricingBatchResponse",
 	"pricing.clearFile":          "PricingClearResponse",
 	"pricing.setDefaults":        "PricingDefaultsResponse",

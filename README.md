@@ -13,7 +13,9 @@ Keymaster 后台业务 API v1 的独立协议项目：现行消息规范与 Go�
 - 跨语言固定向量在工程仓 `parity/KeymasterAPIProtocol/`，
   命令为 `parity:keymaster-api-protocol`
 
-当前双语言版本为 `0.1.2`：Go 标签 `v0.1.2`，npm `keymaster-api-protocol@0.1.2`。钱包导入显式携带 `network`（`test` 或 `main`），由同一契约生成 Go／TypeScript 类型。
+当前双语言版本为 `0.1.3`：Go 标签 `v0.1.3`，npm `keymaster-api-protocol@0.1.3`。钱包导入显式携带 `network`（`test` 或 `main`），由同一契约生成 Go／TypeScript 类型。
+
+`0.1.3` 契约移除 `wallet.import.password`：只接收 `keyMaterial` 和 `network`；TS 便利方法为 `walletImport(keyMaterial, network)`。导入不解密，解锁单独调用。Go 与 TypeScript 客户端遵循同一契约；产品应精确引用同一正式版本。
 
 ## 布局
 

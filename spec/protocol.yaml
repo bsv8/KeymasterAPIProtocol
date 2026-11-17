@@ -1132,10 +1132,8 @@ schemas:
         type: boolean
   WalletImportRequest:
     type: object
-    required: [password, keyMaterial, network]
+    required: [keyMaterial, network]
     properties:
-      password:
-        type: string
       keyMaterial:
         type: string
       network:

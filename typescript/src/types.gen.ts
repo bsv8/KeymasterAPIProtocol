@@ -684,7 +684,6 @@ export interface WalletCreateResponse {
 export interface WalletImportRequest {
   keyMaterial: string;
   network: string;
-  password: string;
 }
 
 export interface WalletImportResponse {

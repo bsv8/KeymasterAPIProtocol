@@ -13,6 +13,8 @@ Keymaster 后台业务 API v1 的独立协议项目：现行消息规范与 Go�
 - 跨语言固定向量在工程仓 `parity/KeymasterAPIProtocol/`，
   命令为 `parity:keymaster-api-protocol`
 
+当前双语言版本为 `0.1.2`：Go 标签 `v0.1.2`，npm `keymaster-api-protocol@0.1.2`。钱包导入显式携带 `network`（`test` 或 `main`），由同一契约生成 Go／TypeScript 类型。
+
 ## 布局
 
 ```text

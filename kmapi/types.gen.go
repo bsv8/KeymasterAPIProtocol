@@ -684,6 +684,7 @@ type WalletCreateResponse struct {
 
 type WalletImportRequest struct {
 	KeyMaterial string `json:"keyMaterial"`
+	Network     string `json:"network"`
 	Password    string `json:"password"`
 }
 

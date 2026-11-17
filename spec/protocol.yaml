@@ -100,7 +100,7 @@ methods:
     params: WalletImportRequest
     result: WalletImportResponse
     timeout: long
-    description: 导入完整钱包（新增能力，后台执行，KeyHold SDK；不覆盖已有钱包）
+    description: 导入纯 KeyHold 密钥（显式指定 test/main；不恢复业务记录，不覆盖已有钱包）
   - name: roots.list
     params: null
     result: RootsView
@@ -1132,11 +1132,13 @@ schemas:
         type: boolean
   WalletImportRequest:
     type: object
-    required: [password, keyMaterial]
+    required: [password, keyMaterial, network]
     properties:
       password:
         type: string
       keyMaterial:
+        type: string
+      network:
         type: string
   WalletImportResponse:
     type: object

@@ -511,8 +511,8 @@ export class KmWSClient {
   async walletCreate(password: string, network: string): Promise<unknown> {
     return this.call(undefined, "wallet.create", { password, network });
   }
-  async walletImport(password: string, keyMaterial: string): Promise<unknown> {
-    return this.call(undefined, "wallet.import", { password, keyMaterial });
+  async walletImport(password: string, keyMaterial: string, network: "test" | "main"): Promise<unknown> {
+    return this.call(undefined, "wallet.import", { password, keyMaterial, network });
   }
 
   private onMessage(ev: MessageEvent): void {

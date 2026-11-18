@@ -1419,66 +1419,6 @@ schemas:
         description: 已验证 App 身份快照（可选回显）；命名空间以后台授权快照为准，不接受业务请求自选
       path:
         type: string
-  PublicationProof:
-    type: object
-    required: [publication, signatureHex]
-    properties:
-      publication:
-        $ref: '#/components/schemas/PublicationRecord'
-      signatureHex:
-        type: string
-  PublicationRecord:
-    type: object
-    required: [version, kind, appPublicKeyHex, name, description]
-    properties:
-      version:
-        type: integer
-      kind:
-        type: string
-        description: url | files | both；按渠道严格要求 url/files 字段
-      appPublicKeyHex:
-        type: string
-      name:
-        type: string
-      description:
-        type: string
-      url:
-        $ref: '#/components/schemas/PublicationUrlChannel'
-      files:
-        $ref: '#/components/schemas/PublicationFilesChannel'
-  PublicationUrlChannel:
-    type: object
-    required: [address, icon]
-    properties:
-      address:
-        type: string
-      icon:
-        type: string
-  PublicationFilesChannel:
-    type: object
-    required: [entrySeedhashhex, icon, files]
-    properties:
-      entrySeedhashhex:
-        type: string
-      icon:
-        type: string
-        description: 清单内图标文件的 MasterSeed seedhashhex
-      files:
-        type: array
-        items:
-          $ref: '#/components/schemas/PublicationFile'
-  PublicationFile:
-    type: object
-    required: [path, mime, size, seedhashhex]
-    properties:
-      path:
-        type: string
-      mime:
-        type: string
-      size:
-        type: integer
-      seedhashhex:
-        type: string
   AppDisplay:
     type: object
     required: [name, description, icon]
@@ -1520,8 +1460,11 @@ schemas:
         type: string
   ConnectDirectoryEntry:
     type: object
-    required: [appPublicKeyHex, urls, files, favorite, marketListed, local]
+    required: [appVersion, appPublicKeyHex, urls, files, favorite, marketListed, local]
     properties:
+      appVersion:
+        type: string
+        description: 已验证发布版本，大.中.小三段整数
       appPublicKeyHex:
         type: string
       name:
@@ -1634,8 +1577,11 @@ schemas:
         description: Files 发布的内容入口；从独立可用文件源下载验证
   ConnectDeploymentInstallResponse:
     type: object
-    required: [deploymentId, appPublicKeyHex, indexseedhashhex]
+    required: [appVersion, deploymentId, appPublicKeyHex, indexseedhashhex]
     properties:
+      appVersion:
+        type: string
+        description: 已验证发布版本，大.中.小三段整数
       deploymentId:
         type: string
       appPublicKeyHex:
@@ -1650,8 +1596,11 @@ schemas:
         type: string
   ConnectDeploymentStartResponse:
     type: object
-    required: [deploymentId, origin, url, appPublicKeyHex, indexseedhashhex]
+    required: [appVersion, deploymentId, origin, url, appPublicKeyHex, indexseedhashhex]
     properties:
+      appVersion:
+        type: string
+        description: 已验证发布版本，大.中.小三段整数
       iconUrl:
         type: string
         description: 仅运行时从已验证清单按图标 seed 映射的本地 URL
@@ -1674,8 +1623,11 @@ schemas:
         type: string
   ConnectDeployment:
     type: object
-    required: [deploymentId, appPublicKeyHex, indexseedhashhex, status]
+    required: [appVersion, deploymentId, appPublicKeyHex, indexseedhashhex, status]
     properties:
+      appVersion:
+        type: string
+        description: 已验证发布版本，大.中.小三段整数
       iconUrl:
         type: string
       deploymentId:

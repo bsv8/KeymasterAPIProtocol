@@ -170,6 +170,7 @@ type ConnectConnectionPauseRequest struct {
 
 type ConnectDeployment struct {
 	AppPublicKeyHex  string  `json:"appPublicKeyHex"`
+	AppVersion       string  `json:"appVersion"`
 	DeploymentID     string  `json:"deploymentId"`
 	IconURL          *string `json:"iconUrl,omitempty"`
 	Indexseedhashhex string  `json:"indexseedhashhex"`
@@ -183,6 +184,7 @@ type ConnectDeploymentInstallRequest struct {
 
 type ConnectDeploymentInstallResponse struct {
 	AppPublicKeyHex  string `json:"appPublicKeyHex"`
+	AppVersion       string `json:"appVersion"`
 	DeploymentID     string `json:"deploymentId"`
 	Indexseedhashhex string `json:"indexseedhashhex"`
 }
@@ -193,6 +195,7 @@ type ConnectDeploymentStartRequest struct {
 
 type ConnectDeploymentStartResponse struct {
 	AppPublicKeyHex  string  `json:"appPublicKeyHex"`
+	AppVersion       string  `json:"appVersion"`
 	DeploymentID     string  `json:"deploymentId"`
 	IconURL          *string `json:"iconUrl,omitempty"`
 	Indexseedhashhex string  `json:"indexseedhashhex"`
@@ -218,6 +221,7 @@ type ConnectDirectoryAddRequest struct {
 
 type ConnectDirectoryEntry struct {
 	AppPublicKeyHex string                       `json:"appPublicKeyHex"`
+	AppVersion      string                       `json:"appVersion"`
 	Description     *string                      `json:"description,omitempty"`
 	Favorite        bool                         `json:"favorite"`
 	Files           []ConnectDirectoryFilesEntry `json:"files"`
@@ -442,39 +446,6 @@ type PricingFileRequest struct {
 
 type PricingFileResponse struct {
 	Updated string `json:"updated"`
-}
-
-type PublicationFile struct {
-	Mime        string `json:"mime"`
-	Path        string `json:"path"`
-	Seedhashhex string `json:"seedhashhex"`
-	Size        int    `json:"size"`
-}
-
-type PublicationFilesChannel struct {
-	EntrySeedhashhex string            `json:"entrySeedhashhex"`
-	Files            []PublicationFile `json:"files"`
-	Icon             string            `json:"icon"`
-}
-
-type PublicationProof struct {
-	Publication  PublicationRecord `json:"publication"`
-	SignatureHex string            `json:"signatureHex"`
-}
-
-type PublicationRecord struct {
-	AppPublicKeyHex string                   `json:"appPublicKeyHex"`
-	Description     string                   `json:"description"`
-	Files           *PublicationFilesChannel `json:"files,omitempty"`
-	Kind            string                   `json:"kind"`
-	Name            string                   `json:"name"`
-	URL             *PublicationURLChannel   `json:"url,omitempty"`
-	Version         int                      `json:"version"`
-}
-
-type PublicationURLChannel struct {
-	Address string `json:"address"`
-	Icon    string `json:"icon"`
 }
 
 type RevisionRequest struct {

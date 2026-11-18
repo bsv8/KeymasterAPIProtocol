@@ -169,6 +169,7 @@ export interface ConnectConnectionPauseRequest {
 
 export interface ConnectDeployment {
   appPublicKeyHex: string;
+  appVersion: string;
   deploymentId: string;
   iconUrl?: string;
   indexseedhashhex: string;
@@ -182,6 +183,7 @@ export interface ConnectDeploymentInstallRequest {
 
 export interface ConnectDeploymentInstallResponse {
   appPublicKeyHex: string;
+  appVersion: string;
   deploymentId: string;
   indexseedhashhex: string;
 }
@@ -192,6 +194,7 @@ export interface ConnectDeploymentStartRequest {
 
 export interface ConnectDeploymentStartResponse {
   appPublicKeyHex: string;
+  appVersion: string;
   deploymentId: string;
   iconUrl?: string;
   indexseedhashhex: string;
@@ -217,6 +220,7 @@ export interface ConnectDirectoryAddRequest {
 
 export interface ConnectDirectoryEntry {
   appPublicKeyHex: string;
+  appVersion: string;
   description?: string;
   favorite: boolean;
   files: ConnectDirectoryFilesEntry[];
@@ -441,39 +445,6 @@ export interface PricingFileRequest {
 
 export interface PricingFileResponse {
   updated: string;
-}
-
-export interface PublicationFile {
-  mime: string;
-  path: string;
-  seedhashhex: string;
-  size: number;
-}
-
-export interface PublicationFilesChannel {
-  entrySeedhashhex: string;
-  files: PublicationFile[];
-  icon: string;
-}
-
-export interface PublicationProof {
-  publication: PublicationRecord;
-  signatureHex: string;
-}
-
-export interface PublicationRecord {
-  appPublicKeyHex: string;
-  description: string;
-  files?: PublicationFilesChannel;
-  kind: string;
-  name: string;
-  url?: PublicationURLChannel;
-  version: number;
-}
-
-export interface PublicationURLChannel {
-  address: string;
-  icon: string;
 }
 
 export interface RevisionRequest {

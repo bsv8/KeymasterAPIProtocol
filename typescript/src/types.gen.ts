@@ -190,6 +190,7 @@ export interface ConnectDeploymentInstallResponse {
 
 export interface ConnectDeploymentStartRequest {
   deploymentId: string;
+  expectedAppPublicKeyHex?: string;
 }
 
 export interface ConnectDeploymentStartResponse {
@@ -210,14 +211,6 @@ export interface ConnectDeploymentView {
   deployments: ConnectDeployment[];
 }
 
-export interface ConnectDirectoryAddRequest {
-  description?: string;
-  icon?: string;
-  indexseedhashhex?: string;
-  name?: string;
-  url?: string;
-}
-
 export interface ConnectDirectoryEntry {
   appPublicKeyHex: string;
   appVersion: string;
@@ -225,8 +218,6 @@ export interface ConnectDirectoryEntry {
   favorite: boolean;
   files: ConnectDirectoryFilesEntry[];
   icon?: string;
-  local: boolean;
-  marketListed: boolean;
   name?: string;
   selected?: ConnectDirectorySelection;
   urls: ConnectDirectoryURLEntry[];
@@ -243,19 +234,8 @@ export interface ConnectDirectoryFilesEntry {
   verifiedAt?: number;
 }
 
-export interface ConnectDirectoryPendingEntry {
-  description?: string;
-  error?: string;
-  icon?: string;
-  indexseedhashhex?: string;
-  name?: string;
-  pendingId: string;
-  url?: string;
-}
-
 export interface ConnectDirectoryRemoveRequest {
-  appPublicKeyHex?: string;
-  pendingId?: string;
+  appPublicKeyHex: string;
 }
 
 export interface ConnectDirectorySelectRequest {
@@ -277,11 +257,10 @@ export interface ConnectDirectoryURLEntry {
 }
 
 export interface ConnectDirectoryView {
+  deletedKeys?: string[];
   entries: ConnectDirectoryEntry[];
   favorites?: Record<string, unknown>;
   knownApplications?: Record<string, unknown>;
-  marketError?: string;
-  pending: ConnectDirectoryPendingEntry[];
 }
 
 export interface ConnectExecRequest {
@@ -377,6 +356,71 @@ export interface Info {
 }
 
 export interface JsonValue {
+}
+
+export interface MarketAddRequest {
+  indexseedhashhex?: string;
+  url?: string;
+}
+
+export interface MarketConfigureRequest {
+  directoryUrl: string;
+  name: string;
+}
+
+export interface MarketDiscardRequest {
+  marketId: string;
+}
+
+export interface MarketManualItem {
+  appPublicKeyHex?: string;
+  appVersion?: string;
+  indexseedhashhex?: string;
+  kind: string;
+  name?: string;
+  pendingId: string;
+  syncError?: string;
+  syncStatus?: string;
+  updatedAt?: number;
+  url?: string;
+  validation: string;
+  validationError?: string;
+}
+
+export interface MarketRecordView {
+  builtIn: boolean;
+  directoryUrl: string;
+  id: string;
+  lastError?: string;
+  lastRejected?: MarketRejectedItem[];
+  lastSuccessAt: number;
+  name: string;
+}
+
+export interface MarketRejectedItem {
+  appPublicKeyHex: string;
+  reason?: string;
+  sourceId: string;
+  status: string;
+}
+
+export interface MarketRemoveRequest {
+  pendingId: string;
+}
+
+export interface MarketRetryRequest {
+  pendingId: string;
+}
+
+export interface MarketStateView {
+  appliedMarketCount?: number;
+  manual: MarketManualItem[];
+  markets: MarketRecordView[];
+  pending: MarketManualItem[];
+}
+
+export interface MarketSyncRequest {
+  marketId?: string;
 }
 
 export interface Ok {

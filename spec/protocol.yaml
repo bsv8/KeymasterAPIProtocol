@@ -320,17 +320,12 @@ methods:
     params: null
     result: ConnectDirectoryView
     timeout: short
-    description: 按 App 公钥合并的目录与独立 pending 项；仅读取动作触发市场缓存刷新
-  - name: connect.directory.add
-    params: ConnectDirectoryAddRequest
-    result: ConnectDirectoryView
-    timeout: long
-    description: 保存 pending 入口；seed 安装验证完成后才归并 App 公钥
+    description: 按 App 公钥合并的本地目录；只读已归属数据，不联网、不触发市场刷新
   - name: connect.directory.remove
     params: ConnectDirectoryRemoveRequest
     result: Ok
     timeout: short
-    description: 删除本地自添加条目；收藏需先取消置顶
+    description: 用户手动删除应用（App 公钥）；写入删除标记阻止来源插件重放恢复
   - name: connect.directory.favorite
     params: ConnectDirectoryFavoriteRequest
     result: Ok
@@ -340,7 +335,42 @@ methods:
     params: ConnectDirectorySelectRequest
     result: Ok
     timeout: short
-    description: 保存本机明确选择的 URL 或 Files 入口，市场刷新不覆盖
+    description: 保存本机明确选择的 URL 或 Files 入口，来源更新不覆盖
+  - name: connect.market.state
+    params: null
+    result: MarketStateView
+    timeout: short
+    description: 市场列表与各自同步记录、手工来源与待验证项；只读本地数据
+  - name: connect.market.sync
+    params: MarketSyncRequest
+    result: MarketStateView
+    timeout: long
+    description: 手动市场同步；携带 marketId 只刷新该市场，省略刷新全部市场。拉取完整目录后按来源批次写入 Connect 目录，逐 App 返回结果
+  - name: connect.market.configure
+    params: MarketConfigureRequest
+    result: MarketStateView
+    timeout: short
+    description: 登记第三方市场（名称与完整目录 URL）；同一目录地址只登记一次，登记后自动首拉一次
+  - name: connect.market.discard
+    params: MarketDiscardRequest
+    result: MarketStateView
+    timeout: long
+    description: 移除第三方市场；先向 Connect 提交该来源全部失效（可重试），在途请求取消，内置市场不可移除
+  - name: connect.market.add
+    params: MarketAddRequest
+    result: MarketStateView
+    timeout: long
+    description: 添加手工来源待验证项；URL 验签或 Files 整包验证通过后才提交目录
+  - name: connect.market.remove
+    params: MarketRemoveRequest
+    result: MarketStateView
+    timeout: short
+    description: 移除手工来源或待验证项；已同步来源先向 Connect 提交失效
+  - name: connect.market.retry
+    params: MarketRetryRequest
+    result: MarketStateView
+    timeout: long
+    description: 重试验证或同步；手工提交直达 Connect，不经市场拉取
   - name: connect.deployment.install
     params: ConnectDeploymentInstallRequest
     result: ConnectDeploymentInstallResponse
@@ -1460,7 +1490,7 @@ schemas:
         type: string
   ConnectDirectoryEntry:
     type: object
-    required: [appVersion, appPublicKeyHex, urls, files, favorite, marketListed, local]
+    required: [appVersion, appPublicKeyHex, urls, files, favorite]
     properties:
       appVersion:
         type: string
@@ -1483,71 +1513,162 @@ schemas:
           $ref: '#/components/schemas/ConnectDirectoryFilesEntry'
       favorite:
         type: boolean
-      marketListed:
-        type: boolean
-      local:
-        type: boolean
       selected:
         $ref: '#/components/schemas/ConnectDirectorySelection'
-  ConnectDirectoryPendingEntry:
-    type: object
-    required: [pendingId]
-    properties:
-      pendingId:
-        type: string
-      url:
-        type: string
-      indexseedhashhex:
-        type: string
-      name:
-        type: string
-      description:
-        type: string
-      icon:
-        type: string
-      error:
-        type: string
   ConnectDirectoryView:
     type: object
-    required: [entries, pending]
+    required: [entries]
     properties:
       entries:
         type: array
         items:
           $ref: '#/components/schemas/ConnectDirectoryEntry'
-      pending:
-        type: array
-        items:
-          $ref: '#/components/schemas/ConnectDirectoryPendingEntry'
-      marketError:
-        type: string
       knownApplications:
         type: object
-        description: 已验证 App 公钥到 AppDisplay 的映射；仅展示资料，不授予可启动入口或权限
+        description: 已验证 App 公钥到展示资料的映射（来自连接与使用记录）；仅展示资料，不授予可启动入口或权限；已删除的 App 不在此投影中
       favorites:
         type: object
         description: App 公钥到 true 的收藏映射，包含没有可启动入口的历史 App
-  ConnectDirectoryAddRequest:
+      deletedKeys:
+        type: array
+        items:
+          type: string
+        description: 用户手动删除的 App 公钥；已删除的 App 不进入目录展示（含历史投影），新的已验证连接恢复管理资格
+  ConnectDirectoryRemoveRequest:
     type: object
-    description: url 与 indexseedhashhex 必须严格二选一，未验证输入只保存为 pending
+    required: [appPublicKeyHex]
+    description: 用户手动删除应用；待验证项归 connect.market.remove
+    properties:
+      appPublicKeyHex:
+        type: string
+  MarketAddRequest:
+    type: object
+    description: url 与 indexseedhashhex 必须严格二选一；名称等展示资料取自验签后的发布，不接受手填
     properties:
       url:
         type: string
       indexseedhashhex:
         type: string
-      name:
-        type: string
-      description:
-        type: string
-      icon:
-        type: string
-  ConnectDirectoryRemoveRequest:
+  MarketRemoveRequest:
     type: object
-    description: appPublicKeyHex 与 pendingId 严格二选一
+    required: [pendingId]
     properties:
+      pendingId:
+        type: string
+  MarketRetryRequest:
+    type: object
+    required: [pendingId]
+    properties:
+      pendingId:
+        type: string
+  MarketRejectedItem:
+    type: object
+    required: [sourceId, appPublicKeyHex, status]
+    properties:
+      sourceId:
+        type: string
       appPublicKeyHex:
         type: string
+      status:
+        type: string
+      reason:
+        type: string
+  MarketManualItem:
+    type: object
+    required: [pendingId, kind, validation]
+    properties:
       pendingId:
+        type: string
+      kind:
+        type: string
+        description: url 或 files
+      url:
+        type: string
+      indexseedhashhex:
+        type: string
+      validation:
+        type: string
+        description: pending、failed 或 verified
+      validationError:
+        type: string
+      syncStatus:
+        type: string
+        description: unsynced、synced、sync-failed 或 lower-version
+      syncError:
+        type: string
+      name:
+        type: string
+      appVersion:
+        type: string
+      appPublicKeyHex:
+        type: string
+      updatedAt:
+        type: integer
+        format: int64
+  MarketRecordView:
+    type: object
+    required: [id, name, directoryUrl, builtIn, lastSuccessAt]
+    properties:
+      id:
+        type: string
+        description: 市场持久 ID，也是 Connect 的来源关联键；内置市场固定 market-default
+      name:
+        type: string
+      directoryUrl:
+        type: string
+        description: 完整目录 URL；第三方可使用任何路径或静态托管 JSON
+      builtIn:
+        type: boolean
+      lastSuccessAt:
+        type: integer
+        format: int64
+        description: 该市场上次成功同步时间；0 表示尚未成功
+      lastError:
+        type: string
+        description: 该市场上次失败原因；空表示无
+      lastRejected:
+        type: array
+        items:
+          $ref: '#/components/schemas/MarketRejectedItem'
+  MarketStateView:
+    type: object
+    required: [markets, pending, manual]
+    properties:
+      markets:
+        type: array
+        items:
+          $ref: '#/components/schemas/MarketRecordView'
+      pending:
+        type: array
+        items:
+          $ref: '#/components/schemas/MarketManualItem'
+      manual:
+        type: array
+        items:
+          $ref: '#/components/schemas/MarketManualItem'
+      appliedMarketCount:
+        type: integer
+        description: 全部市场已应用条目总数
+  MarketSyncRequest:
+    type: object
+    description: 省略 marketId 刷新全部市场；同一市场的并发刷新共用在途任务
+    properties:
+      marketId:
+        type: string
+  MarketConfigureRequest:
+    type: object
+    required: [name, directoryUrl]
+    description: 登记第三方市场；同一完整目录地址只登记一次，新市场分配新 ID
+    properties:
+      name:
+        type: string
+      directoryUrl:
+        type: string
+  MarketDiscardRequest:
+    type: object
+    required: [marketId]
+    properties:
+      marketId:
         type: string
   ConnectDirectoryFavoriteRequest:
     type: object
@@ -1594,6 +1715,9 @@ schemas:
     properties:
       deploymentId:
         type: string
+      expectedAppPublicKeyHex:
+        type: string
+        description: 目录启动传 App 公钥；独立启动省略，沿用原有整包验证
   ConnectDeploymentStartResponse:
     type: object
     required: [appVersion, deploymentId, origin, url, appPublicKeyHex, indexseedhashhex]

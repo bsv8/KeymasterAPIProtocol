@@ -25,13 +25,19 @@ const (
 	MethodConnectDeploymentList    = "connect.deployment.list"    // params=nil result=ConnectDeploymentView timeout=short
 	MethodConnectDeploymentStart   = "connect.deployment.start"   // params=ConnectDeploymentStartRequest result=ConnectDeploymentStartResponse timeout=short
 	MethodConnectDeploymentStop    = "connect.deployment.stop"    // params=ConnectDeploymentStopRequest result=Ok timeout=short
-	MethodConnectDirectoryAdd      = "connect.directory.add"      // params=ConnectDirectoryAddRequest result=ConnectDirectoryView timeout=long
 	MethodConnectDirectoryFavorite = "connect.directory.favorite" // params=ConnectDirectoryFavoriteRequest result=Ok timeout=short
 	MethodConnectDirectoryList     = "connect.directory.list"     // params=nil result=ConnectDirectoryView timeout=short
 	MethodConnectDirectoryRemove   = "connect.directory.remove"   // params=ConnectDirectoryRemoveRequest result=Ok timeout=short
 	MethodConnectDirectorySelect   = "connect.directory.select"   // params=ConnectDirectorySelectRequest result=Ok timeout=short
 	MethodConnectHistoryList       = "connect.history.list"       // params=ConnectHistoryListRequest result=ConnectHistoryView timeout=short
 	MethodConnectLaunchIssue       = "connect.launch.issue"       // params=ConnectLaunchIssueRequest result=ConnectLaunchIssueResponse timeout=short
+	MethodConnectMarketAdd         = "connect.market.add"         // params=MarketAddRequest result=MarketStateView timeout=long
+	MethodConnectMarketConfigure   = "connect.market.configure"   // params=MarketConfigureRequest result=MarketStateView timeout=short
+	MethodConnectMarketDiscard     = "connect.market.discard"     // params=MarketDiscardRequest result=MarketStateView timeout=long
+	MethodConnectMarketRemove      = "connect.market.remove"      // params=MarketRemoveRequest result=MarketStateView timeout=short
+	MethodConnectMarketRetry       = "connect.market.retry"       // params=MarketRetryRequest result=MarketStateView timeout=long
+	MethodConnectMarketState       = "connect.market.state"       // params=nil result=MarketStateView timeout=short
+	MethodConnectMarketSync        = "connect.market.sync"        // params=MarketSyncRequest result=MarketStateView timeout=long
 	MethodConnectPermissionsList   = "connect.permissions.list"   // params=ConnectPermissionsListRequest result=ConnectPermissionsView timeout=short
 	MethodConnectPermissionsRevoke = "connect.permissions.revoke" // params=ConnectPermissionsRevokeRequest result=Ok timeout=short
 	MethodConnectRequestExec       = "connect.request.exec"       // params=ConnectExecRequest result=JsonValue timeout=connect
@@ -86,13 +92,19 @@ var MethodTimeout = map[string]string{
 	"connect.deployment.list":    "short",
 	"connect.deployment.start":   "short",
 	"connect.deployment.stop":    "short",
-	"connect.directory.add":      "long",
 	"connect.directory.favorite": "short",
 	"connect.directory.list":     "short",
 	"connect.directory.remove":   "short",
 	"connect.directory.select":   "short",
 	"connect.history.list":       "short",
 	"connect.launch.issue":       "short",
+	"connect.market.add":         "long",
+	"connect.market.configure":   "short",
+	"connect.market.discard":     "long",
+	"connect.market.remove":      "short",
+	"connect.market.retry":       "long",
+	"connect.market.state":       "short",
+	"connect.market.sync":        "long",
 	"connect.permissions.list":   "short",
 	"connect.permissions.revoke": "short",
 	"connect.request.exec":       "connect",
@@ -147,13 +159,19 @@ var MethodParams = map[string]string{
 	"connect.deployment.list":    "null",
 	"connect.deployment.start":   "ConnectDeploymentStartRequest",
 	"connect.deployment.stop":    "ConnectDeploymentStopRequest",
-	"connect.directory.add":      "ConnectDirectoryAddRequest",
 	"connect.directory.favorite": "ConnectDirectoryFavoriteRequest",
 	"connect.directory.list":     "null",
 	"connect.directory.remove":   "ConnectDirectoryRemoveRequest",
 	"connect.directory.select":   "ConnectDirectorySelectRequest",
 	"connect.history.list":       "ConnectHistoryListRequest",
 	"connect.launch.issue":       "ConnectLaunchIssueRequest",
+	"connect.market.add":         "MarketAddRequest",
+	"connect.market.configure":   "MarketConfigureRequest",
+	"connect.market.discard":     "MarketDiscardRequest",
+	"connect.market.remove":      "MarketRemoveRequest",
+	"connect.market.retry":       "MarketRetryRequest",
+	"connect.market.state":       "null",
+	"connect.market.sync":        "MarketSyncRequest",
 	"connect.permissions.list":   "ConnectPermissionsListRequest",
 	"connect.permissions.revoke": "ConnectPermissionsRevokeRequest",
 	"connect.request.exec":       "ConnectExecRequest",
@@ -208,13 +226,19 @@ var MethodResult = map[string]string{
 	"connect.deployment.list":    "ConnectDeploymentView",
 	"connect.deployment.start":   "ConnectDeploymentStartResponse",
 	"connect.deployment.stop":    "Ok",
-	"connect.directory.add":      "ConnectDirectoryView",
 	"connect.directory.favorite": "Ok",
 	"connect.directory.list":     "ConnectDirectoryView",
 	"connect.directory.remove":   "Ok",
 	"connect.directory.select":   "Ok",
 	"connect.history.list":       "ConnectHistoryView",
 	"connect.launch.issue":       "ConnectLaunchIssueResponse",
+	"connect.market.add":         "MarketStateView",
+	"connect.market.configure":   "MarketStateView",
+	"connect.market.discard":     "MarketStateView",
+	"connect.market.remove":      "MarketStateView",
+	"connect.market.retry":       "MarketStateView",
+	"connect.market.state":       "MarketStateView",
+	"connect.market.sync":        "MarketStateView",
 	"connect.permissions.list":   "ConnectPermissionsView",
 	"connect.permissions.revoke": "Ok",
 	"connect.request.exec":       "JsonValue",

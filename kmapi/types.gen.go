@@ -190,7 +190,8 @@ type ConnectDeploymentInstallResponse struct {
 }
 
 type ConnectDeploymentStartRequest struct {
-	DeploymentID string `json:"deploymentId"`
+	DeploymentID            string  `json:"deploymentId"`
+	ExpectedAppPublicKeyHex *string `json:"expectedAppPublicKeyHex,omitempty"`
 }
 
 type ConnectDeploymentStartResponse struct {
@@ -211,14 +212,6 @@ type ConnectDeploymentView struct {
 	Deployments []ConnectDeployment `json:"deployments"`
 }
 
-type ConnectDirectoryAddRequest struct {
-	Description      *string `json:"description,omitempty"`
-	Icon             *string `json:"icon,omitempty"`
-	Indexseedhashhex *string `json:"indexseedhashhex,omitempty"`
-	Name             *string `json:"name,omitempty"`
-	URL              *string `json:"url,omitempty"`
-}
-
 type ConnectDirectoryEntry struct {
 	AppPublicKeyHex string                       `json:"appPublicKeyHex"`
 	AppVersion      string                       `json:"appVersion"`
@@ -226,8 +219,6 @@ type ConnectDirectoryEntry struct {
 	Favorite        bool                         `json:"favorite"`
 	Files           []ConnectDirectoryFilesEntry `json:"files"`
 	Icon            *string                      `json:"icon,omitempty"`
-	Local           bool                         `json:"local"`
-	MarketListed    bool                         `json:"marketListed"`
 	Name            *string                      `json:"name,omitempty"`
 	Selected        *ConnectDirectorySelection   `json:"selected,omitempty"`
 	URLs            []ConnectDirectoryURLEntry   `json:"urls"`
@@ -244,19 +235,8 @@ type ConnectDirectoryFilesEntry struct {
 	VerifiedAt       *int       `json:"verifiedAt,omitempty"`
 }
 
-type ConnectDirectoryPendingEntry struct {
-	Description      *string `json:"description,omitempty"`
-	Error            *string `json:"error,omitempty"`
-	Icon             *string `json:"icon,omitempty"`
-	Indexseedhashhex *string `json:"indexseedhashhex,omitempty"`
-	Name             *string `json:"name,omitempty"`
-	PendingID        string  `json:"pendingId"`
-	URL              *string `json:"url,omitempty"`
-}
-
 type ConnectDirectoryRemoveRequest struct {
-	AppPublicKeyHex *string `json:"appPublicKeyHex,omitempty"`
-	PendingID       *string `json:"pendingId,omitempty"`
+	AppPublicKeyHex string `json:"appPublicKeyHex"`
 }
 
 type ConnectDirectorySelectRequest struct {
@@ -278,11 +258,10 @@ type ConnectDirectoryURLEntry struct {
 }
 
 type ConnectDirectoryView struct {
-	Entries           []ConnectDirectoryEntry        `json:"entries"`
-	Favorites         map[string]any                 `json:"favorites,omitempty"`
-	KnownApplications map[string]any                 `json:"knownApplications,omitempty"`
-	MarketError       *string                        `json:"marketError,omitempty"`
-	Pending           []ConnectDirectoryPendingEntry `json:"pending"`
+	DeletedKeys       []string                `json:"deletedKeys,omitempty"`
+	Entries           []ConnectDirectoryEntry `json:"entries"`
+	Favorites         map[string]any          `json:"favorites,omitempty"`
+	KnownApplications map[string]any          `json:"knownApplications,omitempty"`
 }
 
 type ConnectExecRequest struct {
@@ -378,6 +357,71 @@ type Info struct {
 }
 
 type JsonValue struct {
+}
+
+type MarketAddRequest struct {
+	Indexseedhashhex *string `json:"indexseedhashhex,omitempty"`
+	URL              *string `json:"url,omitempty"`
+}
+
+type MarketConfigureRequest struct {
+	DirectoryURL string `json:"directoryUrl"`
+	Name         string `json:"name"`
+}
+
+type MarketDiscardRequest struct {
+	MarketID string `json:"marketId"`
+}
+
+type MarketManualItem struct {
+	AppPublicKeyHex  *string `json:"appPublicKeyHex,omitempty"`
+	AppVersion       *string `json:"appVersion,omitempty"`
+	Indexseedhashhex *string `json:"indexseedhashhex,omitempty"`
+	Kind             string  `json:"kind"`
+	Name             *string `json:"name,omitempty"`
+	PendingID        string  `json:"pendingId"`
+	SyncError        *string `json:"syncError,omitempty"`
+	SyncStatus       *string `json:"syncStatus,omitempty"`
+	UpdatedAt        *int64  `json:"updatedAt,omitempty"`
+	URL              *string `json:"url,omitempty"`
+	Validation       string  `json:"validation"`
+	ValidationError  *string `json:"validationError,omitempty"`
+}
+
+type MarketRecordView struct {
+	BuiltIn       bool                 `json:"builtIn"`
+	DirectoryURL  string               `json:"directoryUrl"`
+	ID            string               `json:"id"`
+	LastError     *string              `json:"lastError,omitempty"`
+	LastRejected  []MarketRejectedItem `json:"lastRejected,omitempty"`
+	LastSuccessAt int64                `json:"lastSuccessAt"`
+	Name          string               `json:"name"`
+}
+
+type MarketRejectedItem struct {
+	AppPublicKeyHex string  `json:"appPublicKeyHex"`
+	Reason          *string `json:"reason,omitempty"`
+	SourceID        string  `json:"sourceId"`
+	Status          string  `json:"status"`
+}
+
+type MarketRemoveRequest struct {
+	PendingID string `json:"pendingId"`
+}
+
+type MarketRetryRequest struct {
+	PendingID string `json:"pendingId"`
+}
+
+type MarketStateView struct {
+	AppliedMarketCount *int               `json:"appliedMarketCount,omitempty"`
+	Manual             []MarketManualItem `json:"manual"`
+	Markets            []MarketRecordView `json:"markets"`
+	Pending            []MarketManualItem `json:"pending"`
+}
+
+type MarketSyncRequest struct {
+	MarketID *string `json:"marketId,omitempty"`
 }
 
 type Ok struct {
